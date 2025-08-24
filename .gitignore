@@ -4,3 +4,4 @@ resources/**
 themes/**
 \.gitmodules
 \.hugo_build.lock
+go.sum
