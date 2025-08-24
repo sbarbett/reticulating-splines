@@ -70,8 +70,8 @@ jobs:
           
           # Store the built files BEFORE git operations
           echo "Storing built files..."
-          mkdir -p /tmp/hugo-site
-          cp -r public/* /tmp/hugo-site/
+          # Use rsync to copy contents without preserving directory structure
+          rsync -av public/ /tmp/hugo-site/
           
           # Create or reset the pages branch
           if git show-ref --verify --quiet refs/remotes/origin/pages; then
