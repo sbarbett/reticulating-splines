@@ -68,6 +68,11 @@ jobs:
           echo "Checking for public directory:"
           ls -la public/ || echo "public directory not found"
           
+          # Store the built files BEFORE git operations
+          echo "Storing built files..."
+          mkdir -p /tmp/hugo-site
+          cp -r public/* /tmp/hugo-site/
+          
           # Create or reset the pages branch
           if git show-ref --verify --quiet refs/remotes/origin/pages; then
             git checkout -B pages origin/pages
@@ -78,9 +83,9 @@ jobs:
           # Remove all files except .git
           git rm -rf . || true
           
-          # Copy built files directly from public directory
+          # Copy built files from temporary storage
           echo "Copying built files to pages branch..."
-          cp -r ../public/* .
+          cp -r /tmp/hugo-site/* .
           
           # Add CNAME file for custom domain
           # echo "blog.barbetta.me" > CNAME
