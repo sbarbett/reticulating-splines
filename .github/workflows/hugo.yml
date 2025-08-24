@@ -50,7 +50,7 @@ jobs:
           hugo \
             --gc \
             --minify \
-            --baseURL "https://sbarbett.github.io/blog/"
+            --baseURL "https://sbarbett.github.io/reticulating-splines/"
       
       - name: Setup Git
         run: |
@@ -73,7 +73,7 @@ jobs:
           cp -r public/* .
           
           # Add CNAME file for custom domain
-          echo "blog.barbetta.me" > CNAME
+          # echo "blog.barbetta.me" > CNAME
           
           # Add all files
           git add .
