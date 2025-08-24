@@ -1,9 +1,9 @@
-baseURL = "https://sbarbett.github.io/blog/"
+baseURL = "https://sbarbett.github.io/reticulating-splines/"
 title = "reticulating splines"
 languageCode = "en-us"
 # Add it only if you keep the theme in the `themes` directory.
 # Remove it if you use the theme as a remote Hugo Module.
-theme = "terminal"
+# theme = "terminal"  # Commented out since we're using Hugo Modules
 pagination.pagerSize = 5
 
 [params]
@@ -104,4 +104,4 @@ pagination.pagerSize = 5
   # --
   # replacements = "github.com/panr/hugo-theme-terminal/v4 -> themes/terminal"
 [[module.imports]]
-  path = 'terminal'
+  path = 'github.com/panr/hugo-theme-terminal/v4'

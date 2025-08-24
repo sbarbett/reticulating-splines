@@ -13,8 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial blog setup with Hugo static site generator and terminal theme
 - GitHub Actions workflow for automated deployment to GitHub Pages
 - Release-based deployment strategy with separate pages branch
-
-### Technical
 - Hugo module configuration and production build optimizations
 - Docker Compose setup for local development
 - Static file organization and image assets 
