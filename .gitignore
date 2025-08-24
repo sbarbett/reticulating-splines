@@ -1,0 +1,6 @@
+public/**
+output/**
+resources/**
+themes/**
+\.gitmodules
+\.hugo_build.lock
