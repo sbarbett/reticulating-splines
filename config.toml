@@ -3,7 +3,7 @@ title = "reticulating splines"
 languageCode = "en-us"
 # Add it only if you keep the theme in the `themes` directory.
 # Remove it if you use the theme as a remote Hugo Module.
-# theme = "terminal"  # Commented out since we're using Hugo Modules
+theme = "github.com/panr/hugo-theme-terminal/v4"
 pagination.pagerSize = 5
 
 [params]
@@ -98,10 +98,10 @@ pagination.pagerSize = 5
           name = "about"
           url = "https://shane.barbetta.me"
 
-[module]
-  # In case you would like to make changes to the theme and keep it locally in you repository,
-  # uncomment the line below (and correct the local path if necessary).
-  # --
-  # replacements = "github.com/panr/hugo-theme-terminal/v4 -> themes/terminal"
-[[module.imports]]
-  path = 'github.com/panr/hugo-theme-terminal/v4'
+# [module]
+#   # In case you would like to make changes to the theme and keep it locally in you repository,
+#   # uncomment the line below (and correct the local path if necessary).
+#   # --
+#   # replacements = "github.com/panr/hugo-theme-terminal/v4 -> themes/terminal"
+# [[module.imports]]
+#   path = 'github.com/panr/hugo-theme-terminal/v4'
