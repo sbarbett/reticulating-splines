@@ -58,6 +58,9 @@ jobs:
       
       - name: Deploy to pages branch
         run: |
+          # Clean up any untracked files that might conflict BEFORE checkout
+          git clean -fdx || true
+          
           # Create or reset the pages branch
           if git show-ref --verify --quiet refs/remotes/origin/pages; then
             git checkout -B pages origin/pages
@@ -67,9 +70,6 @@ jobs:
           
           # Remove all files except .git
           git rm -rf . || true
-          
-          # Clean up any untracked files that might conflict
-          git clean -fdx || true
           
           # Copy built files from public directory
           cp -r public/* .
