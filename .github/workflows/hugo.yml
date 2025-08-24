@@ -59,6 +59,15 @@ jobs:
       
       - name: Deploy to pages branch
         run: |
+          # Debug: Check what's in the current directory
+          echo "Current directory: $(pwd)"
+          echo "Contents of current directory:"
+          ls -la
+          
+          # Debug: Check if public directory exists
+          echo "Checking for public directory:"
+          ls -la public/ || echo "public directory not found"
+          
           # Create or reset the pages branch
           if git show-ref --verify --quiet refs/remotes/origin/pages; then
             git checkout -B pages origin/pages
@@ -69,8 +78,13 @@ jobs:
           # Remove all files except .git
           git rm -rf . || true
           
-          # Copy built files from public directory
-          cp -r public/* .
+          # Copy built files from public directory (with error checking)
+          if [ -d "public" ]; then
+            cp -r public/* .
+          else
+            echo "ERROR: public directory not found!"
+            exit 1
+          fi
           
           # Add CNAME file for custom domain
           # echo "blog.barbetta.me" > CNAME
