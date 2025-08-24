@@ -42,15 +42,6 @@ jobs:
           submodules: recursive
           fetch-depth: 0
       
-      - name: Build with Hugo
-        env:
-          HUGO_ENVIRONMENT: production
-          HUGO_ENV: production
-        run: |
-          hugo \
-            --gc \
-            --minify
-      
       - name: Setup Git
         run: |
           git config --global user.name "GitHub Actions"
@@ -68,8 +59,11 @@ jobs:
           # Remove all files except .git
           git rm -rf . || true
           
-          # Copy built files from public directory
-          cp -r ../public/* .
+          # Build Hugo in the pages branch
+          hugo --gc --minify
+          
+          # Copy built files from public directory to current directory
+          cp -r public/* .
           
           # Add CNAME file for custom domain
           # echo "blog.barbetta.me" > CNAME
