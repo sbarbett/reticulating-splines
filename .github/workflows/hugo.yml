@@ -68,6 +68,9 @@ jobs:
           # Remove all files except .git
           git rm -rf . || true
           
+          # Clean up any untracked files that might conflict
+          git clean -fdx || true
+          
           # Copy built files from public directory
           cp -r public/* .
           
