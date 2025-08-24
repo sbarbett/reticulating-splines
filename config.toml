@@ -1,4 +1,6 @@
 baseURL = "https://sbarbett.github.io/reticulating-splines/"
+# Ensure Hugo generates proper relative URLs
+relativeURLs = true
 title = "reticulating splines"
 languageCode = "en-us"
 # Add it only if you keep the theme in the `themes` directory.
@@ -7,6 +9,8 @@ theme = "github.com/panr/hugo-theme-terminal/v4"
 pagination.pagerSize = 5
 
 [params]
+  # Ensure images are served correctly
+  enableRobotsTXT = true
   # dir name of your main content (default is `content/posts`).
   # the list of set content will show up on your index page (baseurl).
   contentTypeName = "posts"

@@ -49,8 +49,7 @@ jobs:
         run: |
           hugo \
             --gc \
-            --minify \
-            --baseURL "https://sbarbett.github.io/reticulating-splines/"
+            --minify
       
       - name: Setup Git
         run: |

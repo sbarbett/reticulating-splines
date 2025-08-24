@@ -670,7 +670,7 @@ ansible-galaxy collection publish namespace-package_name-1.x.x.tar.gz --api-key 
 
 You can get your API key from the Ansible Galaxy website (obviously, you must register an account first). The option is (fairly prominently) on the left-hand side under the **Collections** menu.
 
-![Screenshot of Ansible Galaxy](/img/ansible-galaxy-api-key.jpg)
+![Screenshot of Ansible Galaxy](../img/ansible-galaxy-api-key.jpg)
 
 ## Conclusion
 
