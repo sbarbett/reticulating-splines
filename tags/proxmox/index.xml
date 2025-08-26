@@ -767,8 +767,8 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">tasks&lt;/span>:
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#f92672">include_tasks&lt;/span>: &lt;span style="color:#ae81ff">../roles/proxmox_lxc/tasks/compose_setup.yml&lt;/span>
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now run the playbook, and once it&amp;rsquo;s done, enter your container&amp;rsquo;s IP into a web browser with the &lt;code>:3000&lt;/code> and &lt;code>:8582&lt;/code> ports.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/ansible-it-tools-ss.jpg" alt="Screenshot of IT tools">&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/ansible-gitea-ss.jpg" alt="Screenshot of Gitea">&lt;/p>
+&lt;p>&lt;img src="../../img/ansible-it-tools-ss.jpg" alt="Screenshot of IT tools">&lt;/p>
+&lt;p>&lt;img src="../../img/ansible-gitea-ss.jpg" alt="Screenshot of Gitea">&lt;/p>
 &lt;h2 id="closing">Closing&lt;/h2>
 &lt;p>It was at this point that I realized, &amp;ldquo;Hey, this works, but it is absolute nonsense.&amp;rdquo; By that, I mean things up to this point have been structured completely wrong. I spent an entire day trying to figure out where I went wrong—reading and watching tutorials. There is a core tenet of Ansible roles that frankly eluded me until now:&lt;/p>
 &lt;p>&lt;strong>Do one thing and do it well.&lt;/strong>&lt;/p>
@@ -1189,7 +1189,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">tasks&lt;/span>:
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#f92672">include_tasks&lt;/span>: &lt;span style="color:#ae81ff">../roles/proxmox_lxc/tasks/extras.yml&lt;/span>
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then, in your &lt;code>lxcs.yml&lt;/code> file, add &lt;code>install_extras: true&lt;/code> after your &lt;code>initial_setup: true&lt;/code> line. Run your playbook and log in to your LXC to see if it successfully installed the software.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/neofetch-motd.jpg" alt="Screenshot of neofetch">&lt;/p>
+&lt;p>&lt;img src="../../img/neofetch-motd.jpg" alt="Screenshot of neofetch">&lt;/p>
 &lt;h2 id="closing">Closing&lt;/h2>
 &lt;p>That&amp;rsquo;s all I have in me for today. I have some more ideas, so there will be a part 4 where we get into installing Docker, creating tasks for provisioning pre-configured containers using compose files, and maybe even putting them behind a reverse proxy (Traefik). As usual, the latest updates are on &lt;a href="https://github.com/sbarbett/proxmox-ansible">GitHub&lt;/a>. &amp;lsquo;Til next time.&lt;/p></content></item><item><title>Ansible Playbooks for Proxmox and LXCs Part 2</title><link>https://sbarbett.github.io/reticulating-splines/posts/ansible-playbooks-for-proxmox-lxcs-pt2/</link><pubDate>Wed, 12 Feb 2025 00:00:00 +0000</pubDate><guid>https://sbarbett.github.io/reticulating-splines/posts/ansible-playbooks-for-proxmox-lxcs-pt2/</guid><description>&lt;h1 id="ansible-playbooks-for-proxmox-and-lxcs---part-2">Ansible Playbooks for Proxmox and LXCs - Part 2&lt;/h1>
 &lt;p>I want to continue building on the state-driven modularity of tasks in this Proxmox role. In addition to &lt;code>present&lt;/code> (the default state) and &lt;code>absent&lt;/code>, Proxmox supports the following states:&lt;/p>
@@ -1636,7 +1636,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PLAY RECAP *******************************************************************************************************************************************************************************
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>localhost : ok&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">3&lt;/span> changed&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span> unreachable&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">0&lt;/span> failed&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">0&lt;/span> skipped&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">0&lt;/span> rescued&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">0&lt;/span> ignored&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">0&lt;/span>
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Check your Proxmox interface to confirm the container has been created:&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/proxmox-ansible-create-1.jpg" alt="Screenshot of instance dashboard">&lt;/p>
+&lt;p>&lt;img src="../../img/proxmox-ansible-create-1.jpg" alt="Screenshot of instance dashboard">&lt;/p>
 &lt;h3 id="adding-a-delete-task">Adding a Delete Task&lt;/h3>
 &lt;p>To allow our playbook to both create and delete LXCs based on the defined state, we need to add a delete task to our role. First, create another new file in &lt;code>roles/proxmox_lxc/tasks/&lt;/code> called &lt;code>delete.yml&lt;/code> and add the following content:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>---

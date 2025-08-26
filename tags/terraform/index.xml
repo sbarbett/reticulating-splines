@@ -20,11 +20,11 @@
 &lt;ol>
 &lt;li>
 &lt;p>In the OCI web interface, go to your profile and look for the &lt;strong>API Keys&lt;/strong> section.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/oci-api-key-1.jpg" alt="Screenshot of API keys">&lt;/p>
+&lt;p>&lt;img src="../../img/oci-api-key-1.jpg" alt="Screenshot of API keys">&lt;/p>
 &lt;/li>
 &lt;li>
 &lt;p>Click &lt;strong>Add API Key&lt;/strong>. You&amp;rsquo;ll be prompted to download your key files—make sure to download at least the private key.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/oci-api-key-2.jpg" alt="Screenshot of API key download card">&lt;/p>
+&lt;p>&lt;img src="../../img/oci-api-key-2.jpg" alt="Screenshot of API key download card">&lt;/p>
 &lt;/li>
 &lt;li>
 &lt;p>Move the private key to your &lt;code>~/.ssh&lt;/code> directory, rename it to something like &lt;code>oci-api.pem&lt;/code>, and adjust its permissions:&lt;/p>
@@ -33,7 +33,7 @@
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
 &lt;li>
 &lt;p>After clicking &lt;strong>Add&lt;/strong>, you&amp;rsquo;ll be presented with a configuration file.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/oci-api-key-3.jpg" alt="Screenshot of config file">&lt;/p>
+&lt;p>&lt;img src="../../img/oci-api-key-3.jpg" alt="Screenshot of config file">&lt;/p>
 &lt;/li>
 &lt;li>
 &lt;p>Save this configuration file as &lt;code>~/.oci/config&lt;/code> and update the key file path inside it to match your private key location:&lt;/p>
@@ -44,7 +44,7 @@
 &lt;p>To verify that the OCI CLI is working correctly, run a few test commands.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>oci iam availability-domain list --compartment-id &amp;lt;your_compartment_ocid&amp;gt;
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This command lists the availability domains associated with your account. You can find your &lt;strong>compartment OCID&lt;/strong> in the &lt;strong>Identity&lt;/strong> section of the OCI web interface. (You can also retrieve it via the CLI, but I found it easier to use the UI.)&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/compartment-id.jpg" alt="Screenshot of compartment">&lt;/p>
+&lt;p>&lt;img src="../../img/compartment-id.jpg" alt="Screenshot of compartment">&lt;/p>
 &lt;p>Next, you can list available compute instance types:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>oci compute instance list --compartment-id &amp;lt;your_compartment_ocid&amp;gt;
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This command returns a list of instance types. Take note of this information, as you&amp;rsquo;ll need it when setting up the Terraform module.&lt;/p>
@@ -68,7 +68,7 @@
 &lt;p>This can be a bit tricky. Each region has multiple &lt;strong>availability domains&lt;/strong>, but &amp;ldquo;always free&amp;rdquo; instances may not be available in every one. For example, in the &lt;strong>Ashburn region&lt;/strong>, I couldn&amp;rsquo;t create free-tier instances in &lt;strong>AD-1&lt;/strong> and had to switch to &lt;strong>AD-2&lt;/strong> instead.&lt;/p>
 &lt;h3 id="ubuntu-image-ocid">Ubuntu Image OCID&lt;/h3>
 &lt;p>The &lt;strong>OCID&lt;/strong> of the Ubuntu base image from your object storage. You can find it on the OCI image selection page.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/image-ocid.jpg" alt="Screenshot of image page">&lt;/p>
+&lt;p>&lt;img src="../../img/image-ocid.jpg" alt="Screenshot of image page">&lt;/p>
 &lt;h3 id="publicprivate-keys">Public/Private Keys&lt;/h3>
 &lt;p>Generate a new SSH key pair for your instance:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>ssh-keygen -t rsa -b &lt;span style="color:#ae81ff">4096&lt;/span> -C &lt;span style="color:#e6db74">&amp;#34;ubuntu-pihole&amp;#34;&lt;/span> -f ~/.ssh/ubuntu-pihole.key

@@ -20,11 +20,11 @@
 &lt;ol>
 &lt;li>
 &lt;p>In the OCI web interface, go to your profile and look for the &lt;strong>API Keys&lt;/strong> section.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/oci-api-key-1.jpg" alt="Screenshot of API keys">&lt;/p>
+&lt;p>&lt;img src="../../img/oci-api-key-1.jpg" alt="Screenshot of API keys">&lt;/p>
 &lt;/li>
 &lt;li>
 &lt;p>Click &lt;strong>Add API Key&lt;/strong>. You&amp;rsquo;ll be prompted to download your key files—make sure to download at least the private key.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/oci-api-key-2.jpg" alt="Screenshot of API key download card">&lt;/p>
+&lt;p>&lt;img src="../../img/oci-api-key-2.jpg" alt="Screenshot of API key download card">&lt;/p>
 &lt;/li>
 &lt;li>
 &lt;p>Move the private key to your &lt;code>~/.ssh&lt;/code> directory, rename it to something like &lt;code>oci-api.pem&lt;/code>, and adjust its permissions:&lt;/p>
@@ -33,7 +33,7 @@
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
 &lt;li>
 &lt;p>After clicking &lt;strong>Add&lt;/strong>, you&amp;rsquo;ll be presented with a configuration file.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/oci-api-key-3.jpg" alt="Screenshot of config file">&lt;/p>
+&lt;p>&lt;img src="../../img/oci-api-key-3.jpg" alt="Screenshot of config file">&lt;/p>
 &lt;/li>
 &lt;li>
 &lt;p>Save this configuration file as &lt;code>~/.oci/config&lt;/code> and update the key file path inside it to match your private key location:&lt;/p>
@@ -44,7 +44,7 @@
 &lt;p>To verify that the OCI CLI is working correctly, run a few test commands.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>oci iam availability-domain list --compartment-id &amp;lt;your_compartment_ocid&amp;gt;
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This command lists the availability domains associated with your account. You can find your &lt;strong>compartment OCID&lt;/strong> in the &lt;strong>Identity&lt;/strong> section of the OCI web interface. (You can also retrieve it via the CLI, but I found it easier to use the UI.)&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/compartment-id.jpg" alt="Screenshot of compartment">&lt;/p>
+&lt;p>&lt;img src="../../img/compartment-id.jpg" alt="Screenshot of compartment">&lt;/p>
 &lt;p>Next, you can list available compute instance types:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>oci compute instance list --compartment-id &amp;lt;your_compartment_ocid&amp;gt;
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This command returns a list of instance types. Take note of this information, as you&amp;rsquo;ll need it when setting up the Terraform module.&lt;/p>
@@ -68,7 +68,7 @@
 &lt;p>This can be a bit tricky. Each region has multiple &lt;strong>availability domains&lt;/strong>, but &amp;ldquo;always free&amp;rdquo; instances may not be available in every one. For example, in the &lt;strong>Ashburn region&lt;/strong>, I couldn&amp;rsquo;t create free-tier instances in &lt;strong>AD-1&lt;/strong> and had to switch to &lt;strong>AD-2&lt;/strong> instead.&lt;/p>
 &lt;h3 id="ubuntu-image-ocid">Ubuntu Image OCID&lt;/h3>
 &lt;p>The &lt;strong>OCID&lt;/strong> of the Ubuntu base image from your object storage. You can find it on the OCI image selection page.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/image-ocid.jpg" alt="Screenshot of image page">&lt;/p>
+&lt;p>&lt;img src="../../img/image-ocid.jpg" alt="Screenshot of image page">&lt;/p>
 &lt;h3 id="publicprivate-keys">Public/Private Keys&lt;/h3>
 &lt;p>Generate a new SSH key pair for your instance:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>ssh-keygen -t rsa -b &lt;span style="color:#ae81ff">4096&lt;/span> -C &lt;span style="color:#e6db74">&amp;#34;ubuntu-pihole&amp;#34;&lt;/span> -f ~/.ssh/ubuntu-pihole.key
@@ -124,7 +124,7 @@ This actually provisions the resources.&lt;/p>
 &lt;li>Click the &lt;strong>hamburger menu&lt;/strong> (☰) in the top-left corner and go to Instances.&lt;/li>
 &lt;li>Click &lt;strong>Create Instance&lt;/strong>.&lt;/li>
 &lt;/ol>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/instance-dashboard.jpg" alt="Screenshot of instance dashboard">&lt;/p>
+&lt;p>&lt;img src="../../img/instance-dashboard.jpg" alt="Screenshot of instance dashboard">&lt;/p>
 &lt;h2 id="choose-an-image">Choose An Image&lt;/h2>
 &lt;ul>
 &lt;li>
@@ -132,7 +132,7 @@ This actually provisions the resources.&lt;/p>
 &lt;/li>
 &lt;li>
 &lt;p>Change the OS to Ubuntu Minimal (since plain Debian isn’t an option for some reason).&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/ubuntu-minimal.jpg" alt="Screenshot of Ubuntu Minimal">&lt;/p>
+&lt;p>&lt;img src="../../img/ubuntu-minimal.jpg" alt="Screenshot of Ubuntu Minimal">&lt;/p>
 &lt;/li>
 &lt;/ul>
 &lt;h2 id="select-a-shape">Select A Shape&lt;/h2>
@@ -147,14 +147,14 @@ This actually provisions the resources.&lt;/p>
 &lt;/li>
 &lt;li>
 &lt;p>Otherwise, create a &lt;strong>new VNIC&lt;/strong>.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/vnic-setup.jpg" alt="Screenshot of VNICs">&lt;/p>
+&lt;p>&lt;img src="../../img/vnic-setup.jpg" alt="Screenshot of VNICs">&lt;/p>
 &lt;/li>
 &lt;/ul>
 &lt;h2 id="download-your-ssh-key">Download your SSH key.&lt;/h2>
 &lt;ul>
 &lt;li>
 &lt;p>Download the &lt;strong>private key file&lt;/strong>—you’ll need this to log in.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/download-key.jpg" alt="Screenshot of SSH key download">&lt;/p>
+&lt;p>&lt;img src="../../img/download-key.jpg" alt="Screenshot of SSH key download">&lt;/p>
 &lt;/li>
 &lt;/ul>
 &lt;h1 id="accessing-the-instance">Accessing the Instance&lt;/h1>
@@ -363,17 +363,17 @@ This actually provisions the resources.&lt;/p>
 &lt;li>Click on your &lt;strong>Pihole instance&lt;/strong>.&lt;/li>
 &lt;li>Scroll down and click on &lt;strong>&amp;ldquo;Attached VNICs&amp;rdquo;&lt;/strong>.&lt;/li>
 &lt;/ol>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/attached-vnics.jpg" alt="Screenshot of attached VNICs">&lt;/p>
+&lt;p>&lt;img src="../../img/attached-vnics.jpg" alt="Screenshot of attached VNICs">&lt;/p>
 &lt;ol start="4">
 &lt;li>Click on your &lt;strong>subnet&lt;/strong>.&lt;/li>
 &lt;li>Click on your &lt;strong>security list&lt;/strong>&lt;/li>
 &lt;/ol>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/security-lists.jpg" alt="Screenshot of security lists">&lt;/p>
+&lt;p>&lt;img src="../../img/security-lists.jpg" alt="Screenshot of security lists">&lt;/p>
 &lt;ol start="6">
 &lt;li>Add a new &lt;strong>ingress rule&lt;/strong> for &lt;strong>UDP traffic&lt;/strong> on &lt;strong>port 51820&lt;/strong>, allowing connections &lt;strong>from 0.0.0.0/0&lt;/strong>.&lt;/li>
 &lt;/ol>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/ingress-rules.jpg" alt="Screenshot of ingress rules">&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/add-ingress.jpg" alt="Screenshot of add ingress page">&lt;/p>
+&lt;p>&lt;img src="../../img/ingress-rules.jpg" alt="Screenshot of ingress rules">&lt;/p>
+&lt;p>&lt;img src="../../img/add-ingress.jpg" alt="Screenshot of add ingress page">&lt;/p>
 &lt;h2 id="retrieve-your-wireguard-configuration">Retrieve Your WireGuard Configuration&lt;/h2>
 &lt;p>Once WireGuard is running, the client configuration file is automatically generated on your VM at:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>config/peer1/peer1.conf
@@ -416,15 +416,15 @@ AllowedIPs = 0.0.0.0/0, ::/0
 &lt;p>Since Pi-hole has &lt;strong>a static IP inside the Docker network&lt;/strong>, you can access the web UI at:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>http://192.168.5.2
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This will take you to the admin login page. Enter the password you set in your &lt;code>docker-compose.yml&lt;/code> file.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-login.jpg" alt="Screenshot of login page">&lt;/p>
+&lt;p>&lt;img src="../../img/pihole-login.jpg" alt="Screenshot of login page">&lt;/p>
 &lt;h2 id="explore-the-pi-hole-dashboard">Explore the Pi-hole Dashboard&lt;/h2>
 &lt;p>Once logged in, you&amp;rsquo;ll see real-time DNS activity and other Pi-hole-related settings.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-dash.jpg" alt="Screenshot of dashboard">&lt;/p>
+&lt;p>&lt;img src="../../img/pihole-dash.jpg" alt="Screenshot of dashboard">&lt;/p>
 &lt;p>Pi-hole works out of the box with the default adlists.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-adlists.jpg" alt="Screenshot of adlists">&lt;/p>
+&lt;p>&lt;img src="../../img/pihole-adlists.jpg" alt="Screenshot of adlists">&lt;/p>
 &lt;h2 id="verify-unbound-as-the-upstream-resolver">Verify Unbound as the Upstream Resolver&lt;/h2>
 &lt;p>Under &lt;strong>Settings -&amp;gt; DNS&lt;/strong>, you should see Unbound’s Docker network IP (&lt;code>192.168.5.3&lt;/code>) listed as the upstream DNS resolver.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-settings.jpg" alt="Screenshot of settings">&lt;/p>
+&lt;p>&lt;img src="../../img/pihole-settings.jpg" alt="Screenshot of settings">&lt;/p>
 &lt;p>This confirms that Pi-hole is forwarding DNS queries to Unbound instead of an external provider.&lt;/p>
 &lt;h2 id="test-domain-blocking">Test Domain Blocking&lt;/h2>
 &lt;p>To confirm that Pi-hole is actively blocking domains, follow these steps:&lt;/p>
@@ -432,11 +432,11 @@ AllowedIPs = 0.0.0.0/0, ::/0
 &lt;li>In the Pi-hole admin interface, go to Domain Management.&lt;/li>
 &lt;li>Add a test domain to the blacklist (e.g., example.com).&lt;/li>
 &lt;/ol>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-mgmt.jpg" alt="Screenshot of domain management">&lt;/p>
+&lt;p>&lt;img src="../../img/pihole-mgmt.jpg" alt="Screenshot of domain management">&lt;/p>
 &lt;ol start="3">
 &lt;li>Now try to go to that domain in your browser.&lt;/li>
 &lt;/ol>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-blocked.jpg" alt="Screenshot of blocked page">&lt;/p>
+&lt;p>&lt;img src="../../img/pihole-blocked.jpg" alt="Screenshot of blocked page">&lt;/p>
 &lt;p>Voila! The request is blocked, meaning Pi-hole is working as expected.&lt;/p>
 &lt;h1 id="disabling-logging-and-disconnecting-from-wireguard">Disabling Logging and Disconnecting From Wireguard&lt;/h1>
 &lt;h2 id="disable-unbound-logging-optional">Disable Unbound Logging (Optional)&lt;/h2>

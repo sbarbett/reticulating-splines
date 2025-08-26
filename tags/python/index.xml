@@ -11,7 +11,7 @@
 &lt;p>With all these API changes, it’s the perfect time to work on a strategy.&lt;/p>
 &lt;h2 id="the-pihole-api">The PiHole API&lt;/h2>
 &lt;p>The updated API is actually pretty well-structured.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-api-screenshot.jpg" alt="Screenshot of VNICs">&lt;/p>
+&lt;p>&lt;img src="../../img/pihole-api-screenshot.jpg" alt="Screenshot of VNICs">&lt;/p>
 &lt;p>The configuration section was a bit confusing at first, but you get the hang of it. I plan to use Ansible to manage my setup, which means I need a way to handle connections to the API through a module.&lt;/p>
 &lt;h3 id="python-sdk">Python SDK&lt;/h3>
 &lt;p>I decided to write a little SDK for the PiHole API. If you want to try it out, you can download it from PyPi:&lt;/p>

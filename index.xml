@@ -11,7 +11,7 @@
 &lt;p>With all these API changes, it’s the perfect time to work on a strategy.&lt;/p>
 &lt;h2 id="the-pihole-api">The PiHole API&lt;/h2>
 &lt;p>The updated API is actually pretty well-structured.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-api-screenshot.jpg" alt="Screenshot of VNICs">&lt;/p>
+&lt;p>&lt;img src="../../img/pihole-api-screenshot.jpg" alt="Screenshot of VNICs">&lt;/p>
 &lt;p>The configuration section was a bit confusing at first, but you get the hang of it. I plan to use Ansible to manage my setup, which means I need a way to handle connections to the API through a module.&lt;/p>
 &lt;h3 id="python-sdk">Python SDK&lt;/h3>
 &lt;p>I decided to write a little SDK for the PiHole API. If you want to try it out, you can download it from PyPi:&lt;/p>
@@ -1423,8 +1423,8 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">tasks&lt;/span>:
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#f92672">include_tasks&lt;/span>: &lt;span style="color:#ae81ff">../roles/proxmox_lxc/tasks/compose_setup.yml&lt;/span>
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now run the playbook, and once it&amp;rsquo;s done, enter your container&amp;rsquo;s IP into a web browser with the &lt;code>:3000&lt;/code> and &lt;code>:8582&lt;/code> ports.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/ansible-it-tools-ss.jpg" alt="Screenshot of IT tools">&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/ansible-gitea-ss.jpg" alt="Screenshot of Gitea">&lt;/p>
+&lt;p>&lt;img src="../../img/ansible-it-tools-ss.jpg" alt="Screenshot of IT tools">&lt;/p>
+&lt;p>&lt;img src="../../img/ansible-gitea-ss.jpg" alt="Screenshot of Gitea">&lt;/p>
 &lt;h2 id="closing">Closing&lt;/h2>
 &lt;p>It was at this point that I realized, &amp;ldquo;Hey, this works, but it is absolute nonsense.&amp;rdquo; By that, I mean things up to this point have been structured completely wrong. I spent an entire day trying to figure out where I went wrong—reading and watching tutorials. There is a core tenet of Ansible roles that frankly eluded me until now:&lt;/p>
 &lt;p>&lt;strong>Do one thing and do it well.&lt;/strong>&lt;/p>
@@ -1845,7 +1845,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">tasks&lt;/span>:
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#f92672">include_tasks&lt;/span>: &lt;span style="color:#ae81ff">../roles/proxmox_lxc/tasks/extras.yml&lt;/span>
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then, in your &lt;code>lxcs.yml&lt;/code> file, add &lt;code>install_extras: true&lt;/code> after your &lt;code>initial_setup: true&lt;/code> line. Run your playbook and log in to your LXC to see if it successfully installed the software.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/neofetch-motd.jpg" alt="Screenshot of neofetch">&lt;/p>
+&lt;p>&lt;img src="../../img/neofetch-motd.jpg" alt="Screenshot of neofetch">&lt;/p>
 &lt;h2 id="closing">Closing&lt;/h2>
 &lt;p>That&amp;rsquo;s all I have in me for today. I have some more ideas, so there will be a part 4 where we get into installing Docker, creating tasks for provisioning pre-configured containers using compose files, and maybe even putting them behind a reverse proxy (Traefik). As usual, the latest updates are on &lt;a href="https://github.com/sbarbett/proxmox-ansible">GitHub&lt;/a>. &amp;lsquo;Til next time.&lt;/p></content></item><item><title>Ansible Playbooks for Proxmox and LXCs Part 2</title><link>https://sbarbett.github.io/reticulating-splines/posts/ansible-playbooks-for-proxmox-lxcs-pt2/</link><pubDate>Wed, 12 Feb 2025 00:00:00 +0000</pubDate><guid>https://sbarbett.github.io/reticulating-splines/posts/ansible-playbooks-for-proxmox-lxcs-pt2/</guid><description>&lt;h1 id="ansible-playbooks-for-proxmox-and-lxcs---part-2">Ansible Playbooks for Proxmox and LXCs - Part 2&lt;/h1>
 &lt;p>I want to continue building on the state-driven modularity of tasks in this Proxmox role. In addition to &lt;code>present&lt;/code> (the default state) and &lt;code>absent&lt;/code>, Proxmox supports the following states:&lt;/p>
@@ -2292,7 +2292,7 @@
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>PLAY RECAP *******************************************************************************************************************************************************************************
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>localhost : ok&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">3&lt;/span> changed&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span> unreachable&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">0&lt;/span> failed&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">0&lt;/span> skipped&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">0&lt;/span> rescued&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">0&lt;/span> ignored&lt;span style="color:#f92672">=&lt;/span>&lt;span style="color:#ae81ff">0&lt;/span>
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Check your Proxmox interface to confirm the container has been created:&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/proxmox-ansible-create-1.jpg" alt="Screenshot of instance dashboard">&lt;/p>
+&lt;p>&lt;img src="../../img/proxmox-ansible-create-1.jpg" alt="Screenshot of instance dashboard">&lt;/p>
 &lt;h3 id="adding-a-delete-task">Adding a Delete Task&lt;/h3>
 &lt;p>To allow our playbook to both create and delete LXCs based on the defined state, we need to add a delete task to our role. First, create another new file in &lt;code>roles/proxmox_lxc/tasks/&lt;/code> called &lt;code>delete.yml&lt;/code> and add the following content:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>---
@@ -2439,11 +2439,11 @@
 &lt;ol>
 &lt;li>
 &lt;p>In the OCI web interface, go to your profile and look for the &lt;strong>API Keys&lt;/strong> section.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/oci-api-key-1.jpg" alt="Screenshot of API keys">&lt;/p>
+&lt;p>&lt;img src="../../img/oci-api-key-1.jpg" alt="Screenshot of API keys">&lt;/p>
 &lt;/li>
 &lt;li>
 &lt;p>Click &lt;strong>Add API Key&lt;/strong>. You&amp;rsquo;ll be prompted to download your key files—make sure to download at least the private key.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/oci-api-key-2.jpg" alt="Screenshot of API key download card">&lt;/p>
+&lt;p>&lt;img src="../../img/oci-api-key-2.jpg" alt="Screenshot of API key download card">&lt;/p>
 &lt;/li>
 &lt;li>
 &lt;p>Move the private key to your &lt;code>~/.ssh&lt;/code> directory, rename it to something like &lt;code>oci-api.pem&lt;/code>, and adjust its permissions:&lt;/p>
@@ -2452,7 +2452,7 @@
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
 &lt;li>
 &lt;p>After clicking &lt;strong>Add&lt;/strong>, you&amp;rsquo;ll be presented with a configuration file.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/oci-api-key-3.jpg" alt="Screenshot of config file">&lt;/p>
+&lt;p>&lt;img src="../../img/oci-api-key-3.jpg" alt="Screenshot of config file">&lt;/p>
 &lt;/li>
 &lt;li>
 &lt;p>Save this configuration file as &lt;code>~/.oci/config&lt;/code> and update the key file path inside it to match your private key location:&lt;/p>
@@ -2463,7 +2463,7 @@
 &lt;p>To verify that the OCI CLI is working correctly, run a few test commands.&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>oci iam availability-domain list --compartment-id &amp;lt;your_compartment_ocid&amp;gt;
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This command lists the availability domains associated with your account. You can find your &lt;strong>compartment OCID&lt;/strong> in the &lt;strong>Identity&lt;/strong> section of the OCI web interface. (You can also retrieve it via the CLI, but I found it easier to use the UI.)&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/compartment-id.jpg" alt="Screenshot of compartment">&lt;/p>
+&lt;p>&lt;img src="../../img/compartment-id.jpg" alt="Screenshot of compartment">&lt;/p>
 &lt;p>Next, you can list available compute instance types:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>oci compute instance list --compartment-id &amp;lt;your_compartment_ocid&amp;gt;
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This command returns a list of instance types. Take note of this information, as you&amp;rsquo;ll need it when setting up the Terraform module.&lt;/p>
@@ -2487,7 +2487,7 @@
 &lt;p>This can be a bit tricky. Each region has multiple &lt;strong>availability domains&lt;/strong>, but &amp;ldquo;always free&amp;rdquo; instances may not be available in every one. For example, in the &lt;strong>Ashburn region&lt;/strong>, I couldn&amp;rsquo;t create free-tier instances in &lt;strong>AD-1&lt;/strong> and had to switch to &lt;strong>AD-2&lt;/strong> instead.&lt;/p>
 &lt;h3 id="ubuntu-image-ocid">Ubuntu Image OCID&lt;/h3>
 &lt;p>The &lt;strong>OCID&lt;/strong> of the Ubuntu base image from your object storage. You can find it on the OCI image selection page.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/image-ocid.jpg" alt="Screenshot of image page">&lt;/p>
+&lt;p>&lt;img src="../../img/image-ocid.jpg" alt="Screenshot of image page">&lt;/p>
 &lt;h3 id="publicprivate-keys">Public/Private Keys&lt;/h3>
 &lt;p>Generate a new SSH key pair for your instance:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>ssh-keygen -t rsa -b &lt;span style="color:#ae81ff">4096&lt;/span> -C &lt;span style="color:#e6db74">&amp;#34;ubuntu-pihole&amp;#34;&lt;/span> -f ~/.ssh/ubuntu-pihole.key
@@ -2543,7 +2543,7 @@ This actually provisions the resources.&lt;/p>
 &lt;li>Click the &lt;strong>hamburger menu&lt;/strong> (☰) in the top-left corner and go to Instances.&lt;/li>
 &lt;li>Click &lt;strong>Create Instance&lt;/strong>.&lt;/li>
 &lt;/ol>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/instance-dashboard.jpg" alt="Screenshot of instance dashboard">&lt;/p>
+&lt;p>&lt;img src="../../img/instance-dashboard.jpg" alt="Screenshot of instance dashboard">&lt;/p>
 &lt;h2 id="choose-an-image">Choose An Image&lt;/h2>
 &lt;ul>
 &lt;li>
@@ -2551,7 +2551,7 @@ This actually provisions the resources.&lt;/p>
 &lt;/li>
 &lt;li>
 &lt;p>Change the OS to Ubuntu Minimal (since plain Debian isn’t an option for some reason).&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/ubuntu-minimal.jpg" alt="Screenshot of Ubuntu Minimal">&lt;/p>
+&lt;p>&lt;img src="../../img/ubuntu-minimal.jpg" alt="Screenshot of Ubuntu Minimal">&lt;/p>
 &lt;/li>
 &lt;/ul>
 &lt;h2 id="select-a-shape">Select A Shape&lt;/h2>
@@ -2566,14 +2566,14 @@ This actually provisions the resources.&lt;/p>
 &lt;/li>
 &lt;li>
 &lt;p>Otherwise, create a &lt;strong>new VNIC&lt;/strong>.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/vnic-setup.jpg" alt="Screenshot of VNICs">&lt;/p>
+&lt;p>&lt;img src="../../img/vnic-setup.jpg" alt="Screenshot of VNICs">&lt;/p>
 &lt;/li>
 &lt;/ul>
 &lt;h2 id="download-your-ssh-key">Download your SSH key.&lt;/h2>
 &lt;ul>
 &lt;li>
 &lt;p>Download the &lt;strong>private key file&lt;/strong>—you’ll need this to log in.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/download-key.jpg" alt="Screenshot of SSH key download">&lt;/p>
+&lt;p>&lt;img src="../../img/download-key.jpg" alt="Screenshot of SSH key download">&lt;/p>
 &lt;/li>
 &lt;/ul>
 &lt;h1 id="accessing-the-instance">Accessing the Instance&lt;/h1>
@@ -2782,17 +2782,17 @@ This actually provisions the resources.&lt;/p>
 &lt;li>Click on your &lt;strong>Pihole instance&lt;/strong>.&lt;/li>
 &lt;li>Scroll down and click on &lt;strong>&amp;ldquo;Attached VNICs&amp;rdquo;&lt;/strong>.&lt;/li>
 &lt;/ol>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/attached-vnics.jpg" alt="Screenshot of attached VNICs">&lt;/p>
+&lt;p>&lt;img src="../../img/attached-vnics.jpg" alt="Screenshot of attached VNICs">&lt;/p>
 &lt;ol start="4">
 &lt;li>Click on your &lt;strong>subnet&lt;/strong>.&lt;/li>
 &lt;li>Click on your &lt;strong>security list&lt;/strong>&lt;/li>
 &lt;/ol>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/security-lists.jpg" alt="Screenshot of security lists">&lt;/p>
+&lt;p>&lt;img src="../../img/security-lists.jpg" alt="Screenshot of security lists">&lt;/p>
 &lt;ol start="6">
 &lt;li>Add a new &lt;strong>ingress rule&lt;/strong> for &lt;strong>UDP traffic&lt;/strong> on &lt;strong>port 51820&lt;/strong>, allowing connections &lt;strong>from 0.0.0.0/0&lt;/strong>.&lt;/li>
 &lt;/ol>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/ingress-rules.jpg" alt="Screenshot of ingress rules">&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/add-ingress.jpg" alt="Screenshot of add ingress page">&lt;/p>
+&lt;p>&lt;img src="../../img/ingress-rules.jpg" alt="Screenshot of ingress rules">&lt;/p>
+&lt;p>&lt;img src="../../img/add-ingress.jpg" alt="Screenshot of add ingress page">&lt;/p>
 &lt;h2 id="retrieve-your-wireguard-configuration">Retrieve Your WireGuard Configuration&lt;/h2>
 &lt;p>Once WireGuard is running, the client configuration file is automatically generated on your VM at:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>config/peer1/peer1.conf
@@ -2835,15 +2835,15 @@ AllowedIPs = 0.0.0.0/0, ::/0
 &lt;p>Since Pi-hole has &lt;strong>a static IP inside the Docker network&lt;/strong>, you can access the web UI at:&lt;/p>
 &lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>http://192.168.5.2
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This will take you to the admin login page. Enter the password you set in your &lt;code>docker-compose.yml&lt;/code> file.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-login.jpg" alt="Screenshot of login page">&lt;/p>
+&lt;p>&lt;img src="../../img/pihole-login.jpg" alt="Screenshot of login page">&lt;/p>
 &lt;h2 id="explore-the-pi-hole-dashboard">Explore the Pi-hole Dashboard&lt;/h2>
 &lt;p>Once logged in, you&amp;rsquo;ll see real-time DNS activity and other Pi-hole-related settings.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-dash.jpg" alt="Screenshot of dashboard">&lt;/p>
+&lt;p>&lt;img src="../../img/pihole-dash.jpg" alt="Screenshot of dashboard">&lt;/p>
 &lt;p>Pi-hole works out of the box with the default adlists.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-adlists.jpg" alt="Screenshot of adlists">&lt;/p>
+&lt;p>&lt;img src="../../img/pihole-adlists.jpg" alt="Screenshot of adlists">&lt;/p>
 &lt;h2 id="verify-unbound-as-the-upstream-resolver">Verify Unbound as the Upstream Resolver&lt;/h2>
 &lt;p>Under &lt;strong>Settings -&amp;gt; DNS&lt;/strong>, you should see Unbound’s Docker network IP (&lt;code>192.168.5.3&lt;/code>) listed as the upstream DNS resolver.&lt;/p>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-settings.jpg" alt="Screenshot of settings">&lt;/p>
+&lt;p>&lt;img src="../../img/pihole-settings.jpg" alt="Screenshot of settings">&lt;/p>
 &lt;p>This confirms that Pi-hole is forwarding DNS queries to Unbound instead of an external provider.&lt;/p>
 &lt;h2 id="test-domain-blocking">Test Domain Blocking&lt;/h2>
 &lt;p>To confirm that Pi-hole is actively blocking domains, follow these steps:&lt;/p>
@@ -2851,11 +2851,11 @@ AllowedIPs = 0.0.0.0/0, ::/0
 &lt;li>In the Pi-hole admin interface, go to Domain Management.&lt;/li>
 &lt;li>Add a test domain to the blacklist (e.g., example.com).&lt;/li>
 &lt;/ol>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-mgmt.jpg" alt="Screenshot of domain management">&lt;/p>
+&lt;p>&lt;img src="../../img/pihole-mgmt.jpg" alt="Screenshot of domain management">&lt;/p>
 &lt;ol start="3">
 &lt;li>Now try to go to that domain in your browser.&lt;/li>
 &lt;/ol>
-&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-blocked.jpg" alt="Screenshot of blocked page">&lt;/p>
+&lt;p>&lt;img src="../../img/pihole-blocked.jpg" alt="Screenshot of blocked page">&lt;/p>
 &lt;p>Voila! The request is blocked, meaning Pi-hole is working as expected.&lt;/p>
 &lt;h1 id="disabling-logging-and-disconnecting-from-wireguard">Disabling Logging and Disconnecting From Wireguard&lt;/h1>
 &lt;h2 id="disable-unbound-logging-optional">Disable Unbound Logging (Optional)&lt;/h2>
