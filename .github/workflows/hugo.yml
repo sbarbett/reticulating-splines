@@ -72,7 +72,17 @@ jobs:
           echo "Storing built files..."
           mkdir -p /tmp/hugo-built-files
           cp -r public/* /tmp/hugo-built-files/
+          
+          # Debug: Check what's in the temp directory
+          echo "Contents of /tmp/hugo-built-files before cleanup:"
+          ls -la /tmp/hugo-built-files/
+          
+          # Remove any public directory that might have been created
           rm -rf /tmp/hugo-built-files/public
+          
+          # Debug: Check what's in the temp directory after cleanup
+          echo "Contents of /tmp/hugo-built-files after cleanup:"
+          ls -la /tmp/hugo-built-files/
           
           # Create or reset the pages branch
           if git show-ref --verify --quiet refs/remotes/origin/pages; then
@@ -87,6 +97,10 @@ jobs:
           # Copy built files from temporary location
           echo "Copying built files to pages branch..."
           cp -r /tmp/hugo-built-files/* .
+          
+          # Debug: Check what was copied to the pages branch
+          echo "Contents of pages branch after copy:"
+          ls -la
           
           # Add CNAME file for custom domain
           # echo "blog.barbetta.me" > CNAME
