@@ -72,6 +72,7 @@ jobs:
           echo "Storing built files..."
           mkdir -p /tmp/hugo-built-files
           cp -r public/* /tmp/hugo-built-files/
+          rm -rf /tmp/hugo-built-files/public
           
           # Create or reset the pages branch
           if git show-ref --verify --quiet refs/remotes/origin/pages; then
