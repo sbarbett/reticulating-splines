@@ -299,9 +299,9 @@ Finally, add the following step to your playbook.
 
 Now run the playbook, and once it's done, enter your container's IP into a web browser with the `:3000` and `:8582` ports.
 
-![Screenshot of IT tools](/img/ansible-it-tools-ss.jpg)
+![Screenshot of IT tools](../../img/ansible-it-tools-ss.jpg)
 
-![Screenshot of Gitea](/img/ansible-gitea-ss.jpg)
+![Screenshot of Gitea](../../img/ansible-gitea-ss.jpg)
 
 ## Closing
 

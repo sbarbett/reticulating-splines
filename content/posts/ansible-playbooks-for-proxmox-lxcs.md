@@ -324,7 +324,7 @@ localhost                  : ok=3    changed=1    unreachable=0    failed=0    s
 
 Check your Proxmox interface to confirm the container has been created:
 
-![Screenshot of instance dashboard](/img/proxmox-ansible-create-1.jpg)
+![Screenshot of instance dashboard](../../img/proxmox-ansible-create-1.jpg)
 
 ### Adding a Delete Task
 

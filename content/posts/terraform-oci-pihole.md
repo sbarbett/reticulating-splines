@@ -51,11 +51,11 @@ I wasn't initially aware of the CLI’s guided setup, so I configured everything
 
 1. In the OCI web interface, go to your profile and look for the **API Keys** section.
 
-    ![Screenshot of API keys](/img/oci-api-key-1.jpg)
+    ![Screenshot of API keys](../../img/oci-api-key-1.jpg)
 
 2. Click **Add API Key**. You'll be prompted to download your key files—make sure to download at least the private key.
 
-    ![Screenshot of API key download card](/img/oci-api-key-2.jpg)
+    ![Screenshot of API key download card](../../img/oci-api-key-2.jpg)
 
 3. Move the private key to your `~/.ssh` directory, rename it to something like `oci-api.pem`, and adjust its permissions:
 
@@ -66,7 +66,7 @@ I wasn't initially aware of the CLI’s guided setup, so I configured everything
 
 4. After clicking **Add**, you'll be presented with a configuration file.
 
-    ![Screenshot of config file](/img/oci-api-key-3.jpg)
+    ![Screenshot of config file](../../img/oci-api-key-3.jpg)
 
 5. Save this configuration file as `~/.oci/config` and update the key file path inside it to match your private key location:
 
@@ -84,7 +84,7 @@ oci iam availability-domain list --compartment-id <your_compartment_ocid>
 
 This command lists the availability domains associated with your account. You can find your **compartment OCID** in the **Identity** section of the OCI web interface. (You can also retrieve it via the CLI, but I found it easier to use the UI.)
 
-![Screenshot of compartment](/img/compartment-id.jpg)
+![Screenshot of compartment](../../img/compartment-id.jpg)
 
 Next, you can list available compute instance types:
 
@@ -132,7 +132,7 @@ This can be a bit tricky. Each region has multiple **availability domains**, but
 
 The **OCID** of the Ubuntu base image from your object storage. You can find it on the OCI image selection page.
 
-![Screenshot of image page](/img/image-ocid.jpg)
+![Screenshot of image page](../../img/image-ocid.jpg)
 
 ### Public/Private Keys
 

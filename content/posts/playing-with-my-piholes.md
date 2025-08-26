@@ -29,7 +29,7 @@ With all these API changes, it’s the perfect time to work on a strategy.
 
 The updated API is actually pretty well-structured.
 
-![Screenshot of VNICs](/img/pihole-api-screenshot.jpg)
+![Screenshot of VNICs](../../img/pihole-api-screenshot.jpg)
 
 The configuration section was a bit confusing at first, but you get the hang of it. I plan to use Ansible to manage my setup, which means I need a way to handle connections to the API through a module. 
 

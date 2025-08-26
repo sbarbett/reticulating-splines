@@ -506,7 +506,7 @@ Finally, in your playbook add the following play:
 
 Then, in your `lxcs.yml` file, add `install_extras: true` after your `initial_setup: true` line. Run your playbook and log in to your LXC to see if it successfully installed the software.
 
-![Screenshot of neofetch](/img/neofetch-motd.jpg)
+![Screenshot of neofetch](../../img/neofetch-motd.jpg)
 
 ## Closing
 

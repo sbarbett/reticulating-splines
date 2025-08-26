@@ -33,14 +33,14 @@ To create an "always free" VM, follow these steps in the Oracle Cloud Console.
 1. Click the **hamburger menu** (☰) in the top-left corner and go to Instances.
 2. Click **Create Instance**.
 
-![Screenshot of instance dashboard](/img/instance-dashboard.jpg)
+![Screenshot of instance dashboard](../../img/instance-dashboard.jpg)
 
 ## Choose An Image
 
 * Most of the defaults can remain the same.
 * Change the OS to Ubuntu Minimal (since plain Debian isn’t an option for some reason).
 
-  ![Screenshot of Ubuntu Minimal](/img/ubuntu-minimal.jpg)
+  ![Screenshot of Ubuntu Minimal](../../img/ubuntu-minimal.jpg)
 
 ## Select A Shape
 
@@ -52,13 +52,13 @@ To create an "always free" VM, follow these steps in the Oracle Cloud Console.
 * If this is your **first** instance, just use the **default VNIC**.
 * Otherwise, create a **new VNIC**.
 
-  ![Screenshot of VNICs](/img/vnic-setup.jpg)
+  ![Screenshot of VNICs](../../img/vnic-setup.jpg)
 
 ## Download your SSH key.
 
 * Download the **private key file**—you’ll need this to log in.
 
-  ![Screenshot of SSH key download](/img/download-key.jpg)
+  ![Screenshot of SSH key download](../../img/download-key.jpg)
 
 # Accessing the Instance
 
@@ -394,18 +394,18 @@ To allow ingress UDP traffic for WireGuard, we need to configure Oracle Cloud's 
 2. Click on your **Pihole instance**.
 3. Scroll down and click on **"Attached VNICs"**.
 
-  ![Screenshot of attached VNICs](/img/attached-vnics.jpg)
+  ![Screenshot of attached VNICs](../../img/attached-vnics.jpg)
 
 4. Click on your **subnet**.
 5. Click on your **security list**
 
-  ![Screenshot of security lists](/img/security-lists.jpg)
+  ![Screenshot of security lists](../../img/security-lists.jpg)
 
 6. Add a new **ingress rule** for **UDP traffic** on **port 51820**, allowing connections **from 0.0.0.0/0**.
 
-  ![Screenshot of ingress rules](/img/ingress-rules.jpg)
+  ![Screenshot of ingress rules](../../img/ingress-rules.jpg)
 
-  ![Screenshot of add ingress page](/img/add-ingress.jpg)
+  ![Screenshot of add ingress page](../../img/add-ingress.jpg)
 
 ## Retrieve Your WireGuard Configuration
 
@@ -498,23 +498,23 @@ http://192.168.5.2
 
 This will take you to the admin login page. Enter the password you set in your `docker-compose.yml` file.
 
-![Screenshot of login page](/img/pihole-login.jpg)
+![Screenshot of login page](../../img/pihole-login.jpg)
 
 ## Explore the Pi-hole Dashboard
 
 Once logged in, you'll see real-time DNS activity and other Pi-hole-related settings.
 
-![Screenshot of dashboard](/img/pihole-dash.jpg)
+![Screenshot of dashboard](../../img/pihole-dash.jpg)
 
 Pi-hole works out of the box with the default adlists.
 
-![Screenshot of adlists](/img/pihole-adlists.jpg)
+![Screenshot of adlists](../../img/pihole-adlists.jpg)
 
 ## Verify Unbound as the Upstream Resolver
 
 Under **Settings -> DNS**, you should see Unbound’s Docker network IP (`192.168.5.3`) listed as the upstream DNS resolver.
 
-![Screenshot of settings](/img/pihole-settings.jpg)
+![Screenshot of settings](../../img/pihole-settings.jpg)
 
 This confirms that Pi-hole is forwarding DNS queries to Unbound instead of an external provider.
 
@@ -525,11 +525,11 @@ To confirm that Pi-hole is actively blocking domains, follow these steps:
 1. In the Pi-hole admin interface, go to Domain Management.
 2. Add a test domain to the blacklist (e.g., example.com).
 
-  ![Screenshot of domain management](/img/pihole-mgmt.jpg)
+  ![Screenshot of domain management](../../img/pihole-mgmt.jpg)
 
 3. Now try to go to that domain in your browser.
 
-  ![Screenshot of blocked page](/img/pihole-blocked.jpg)
+  ![Screenshot of blocked page](../../img/pihole-blocked.jpg)
 
 Voila! The request is blocked, meaning Pi-hole is working as expected.
 
