@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Wireguard on reticulating splines</title><link>https://sbarbett.github.io/reticulating-splines/tags/wireguard/</link><description>Recent content in Wireguard on reticulating splines</description><generator>Hugo -- gohugo.io</generator><language>en</language><lastBuildDate>Sun, 02 Feb 2025 00:00:00 +0000</lastBuildDate><atom:link href="https://sbarbett.github.io/reticulating-splines/tags/wireguard/index.xml" rel="self" type="application/rss+xml"/><item><title>Deploying an OCI Pi-hole with Terraform</title><link>https://sbarbett.github.io/reticulating-splines/posts/terraform-oci-pihole/</link><pubDate>Sun, 02 Feb 2025 00:00:00 +0000</pubDate><guid>https://sbarbett.github.io/reticulating-splines/posts/terraform-oci-pihole/</guid><description>&lt;h1 id="deploying-an-oci-pi-hole-with-terraform">Deploying an OCI Pi-hole with Terraform&lt;/h1>
+&lt;p>The other day, I wrote about deploying a Pi-hole on an Oracle Cloud VM alongside Unbound and WireGuard. In that post, I explained how to set everything up manually through the web interface and CLI. This time, I wanted to automate the deployment using a shell script and OCI&amp;rsquo;s Terraform module.&lt;/p>
+&lt;h2 id="terraform">Terraform&lt;/h2>
+&lt;p>Terraform is an infrastructure-as-code tool that lets you define and provision infrastructure through configuration files. Instead of manually setting up resources, you can describe them in a script, and Terraform will handle the provisioning.&lt;/p></description><content>&lt;h1 id="deploying-an-oci-pi-hole-with-terraform">Deploying an OCI Pi-hole with Terraform&lt;/h1>
+&lt;p>The other day, I wrote about deploying a Pi-hole on an Oracle Cloud VM alongside Unbound and WireGuard. In that post, I explained how to set everything up manually through the web interface and CLI. This time, I wanted to automate the deployment using a shell script and OCI&amp;rsquo;s Terraform module.&lt;/p>
+&lt;h2 id="terraform">Terraform&lt;/h2>
+&lt;p>Terraform is an infrastructure-as-code tool that lets you define and provision infrastructure through configuration files. Instead of manually setting up resources, you can describe them in a script, and Terraform will handle the provisioning.&lt;/p>
+&lt;p>To use it, you&amp;rsquo;ll need to install the &lt;code>terraform&lt;/code> client. On Arch Linux:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>pacman -S terraform
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#75715e"># ...or use your pacman wrapper, like paru&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>I haven&amp;rsquo;t installed Terraform on macOS or Windows myself, but you can find installation instructions in &lt;a href="https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli">Hashicorp&amp;rsquo;s documentation&lt;/a>.&lt;/p>
+&lt;h2 id="installing-the-oci-cli">Installing the OCI CLI&lt;/h2>
+&lt;p>The Oracle Cloud Infrastructure (OCI) CLI isn&amp;rsquo;t strictly required for this setup, but it can be helpful. You can find installation instructions in &lt;a href="https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/cliinstall.htm">Oracle&amp;rsquo;s docs&lt;/a>.&lt;/p>
+&lt;p>On Arch, install it with:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>pacman -S oci-cli
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Once installed, you can run the guided configuration setup:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>oci setup config
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="manual-config-setup">Manual Config Setup&lt;/h2>
+&lt;p>I wasn&amp;rsquo;t initially aware of the CLI’s guided setup, so I configured everything manually. If you&amp;rsquo;d prefer to do the same, follow these steps:&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>In the OCI web interface, go to your profile and look for the &lt;strong>API Keys&lt;/strong> section.&lt;/p>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/oci-api-key-1.jpg" alt="Screenshot of API keys">&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Click &lt;strong>Add API Key&lt;/strong>. You&amp;rsquo;ll be prompted to download your key files—make sure to download at least the private key.&lt;/p>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/oci-api-key-2.jpg" alt="Screenshot of API key download card">&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Move the private key to your &lt;code>~/.ssh&lt;/code> directory, rename it to something like &lt;code>oci-api.pem&lt;/code>, and adjust its permissions:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>mv path/to/downloaded-key ~/.ssh/oci-api.pem
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>chmod &lt;span style="color:#ae81ff">600&lt;/span> ~/.ssh/oci-api.pem
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>After clicking &lt;strong>Add&lt;/strong>, you&amp;rsquo;ll be presented with a configuration file.&lt;/p>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/oci-api-key-3.jpg" alt="Screenshot of config file">&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Save this configuration file as &lt;code>~/.oci/config&lt;/code> and update the key file path inside it to match your private key location:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>key_file&lt;span style="color:#f92672">=&lt;/span>~/.ssh/oci-api.pem
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/ol>
+&lt;h3 id="testing">Testing&lt;/h3>
+&lt;p>To verify that the OCI CLI is working correctly, run a few test commands.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>oci iam availability-domain list --compartment-id &amp;lt;your_compartment_ocid&amp;gt;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This command lists the availability domains associated with your account. You can find your &lt;strong>compartment OCID&lt;/strong> in the &lt;strong>Identity&lt;/strong> section of the OCI web interface. (You can also retrieve it via the CLI, but I found it easier to use the UI.)&lt;/p>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/compartment-id.jpg" alt="Screenshot of compartment">&lt;/p>
+&lt;p>Next, you can list available compute instance types:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>oci compute instance list --compartment-id &amp;lt;your_compartment_ocid&amp;gt;
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This command returns a list of instance types. Take note of this information, as you&amp;rsquo;ll need it when setting up the Terraform module.&lt;/p>
+&lt;h2 id="setting-up-the-module">Setting Up the Module&lt;/h2>
+&lt;p>First, download the Terraform scripts &lt;a href="https://github.com/sbarbett/pihole-terraform">from GitHub&lt;/a>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>git clone https://github.com/sbarbett/pihole-terraform.git
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>cd pihole-terraform
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>You&amp;rsquo;ll need to create a &lt;code>terraform.tfvars&lt;/code> file containing the following values:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>region &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;us-ashburn-1&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>compartment_id &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;ocid1.tenancy.oc1..uniqueID&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>availability_domain &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;uPHd:US-ASHBURN-AD-2&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>ubuntu_image_ocid &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;ocid1.image.oc1.iad.uniqueID&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>public_key_path &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;~/.ssh/ubuntu-pihole.key.pub&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>private_key_path &lt;span style="color:#f92672">=&lt;/span> &lt;span style="color:#e6db74">&amp;#34;~/.ssh/ubuntu-pihole.key&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Let&amp;rsquo;s go over each of these values.&lt;/p>
+&lt;h3 id="region">Region&lt;/h3>
+&lt;p>If you&amp;rsquo;re using a &lt;strong>free tier&lt;/strong> account, you only have access to one region—the one you selected when setting up your Oracle Cloud account.&lt;/p>
+&lt;h3 id="compartment-id">Compartment ID&lt;/h3>
+&lt;p>This is the &lt;strong>compartment OCID&lt;/strong> you retrieved earlier. It should be the compartment where you want to deploy the instance.&lt;/p>
+&lt;h3 id="availability-domain">Availability Domain&lt;/h3>
+&lt;p>This can be a bit tricky. Each region has multiple &lt;strong>availability domains&lt;/strong>, but &amp;ldquo;always free&amp;rdquo; instances may not be available in every one. For example, in the &lt;strong>Ashburn region&lt;/strong>, I couldn&amp;rsquo;t create free-tier instances in &lt;strong>AD-1&lt;/strong> and had to switch to &lt;strong>AD-2&lt;/strong> instead.&lt;/p>
+&lt;h3 id="ubuntu-image-ocid">Ubuntu Image OCID&lt;/h3>
+&lt;p>The &lt;strong>OCID&lt;/strong> of the Ubuntu base image from your object storage. You can find it on the OCI image selection page.&lt;/p>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/image-ocid.jpg" alt="Screenshot of image page">&lt;/p>
+&lt;h3 id="publicprivate-keys">Public/Private Keys&lt;/h3>
+&lt;p>Generate a new SSH key pair for your instance:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>ssh-keygen -t rsa -b &lt;span style="color:#ae81ff">4096&lt;/span> -C &lt;span style="color:#e6db74">&amp;#34;ubuntu-pihole&amp;#34;&lt;/span> -f ~/.ssh/ubuntu-pihole.key
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This will create two files:&lt;/p>
+&lt;ul>
+&lt;li>&lt;code>~/.ssh/ubuntu-pihole.key.pub&lt;/code> &lt;em>(public key)&lt;/em>&lt;/li>
+&lt;li>&lt;code>~/.ssh/ubuntu-pihole.key&lt;/code> &lt;em>(private key)&lt;/em>&lt;/li>
+&lt;/ul>
+&lt;p>Set the correct permissions for the private key:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>chmod &lt;span style="color:#ae81ff">600&lt;/span> ~/.ssh/ubuntu-pihole.key
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="deploying">Deploying&lt;/h2>
+&lt;p>Once your config has been set up, deploy your VM using the &lt;code>terraform&lt;/code> CLI.&lt;/p>
+&lt;ol>
+&lt;li>
+&lt;p>&lt;strong>Initialize Terraform:&lt;/strong>
+This sets up Terraform and downloads the necessary provider plugins.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>terraform init
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Review the Execution Plan:&lt;/strong>
+This previews the changes Terraform will make.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>terraform plan
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>&lt;strong>Apply the Configuration:&lt;/strong>
+This actually provisions the resources.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>terraform apply
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/ol>
+&lt;p>If everything is configured correctly, Terraform will:&lt;/p>
+&lt;ul>
+&lt;li>Deploy your VM with the necessary ingress firewall rules.&lt;/li>
+&lt;li>Copy &lt;code>setup.sh&lt;/code> to the instance and execute it.&lt;/li>
+&lt;li>Deploy the required containers.&lt;/li>
+&lt;li>Automatically copy the WireGuard configuration file to &lt;code>~/.wireguard/wg-pihole.conf&lt;/code>.&lt;/li>
+&lt;/ul>
+&lt;p>Once the setup is complete, you can use your WireGuard client to connect to the VPN. For additional details, see &lt;a href="https://sbarbett.github.io/reticulating-splines/posts/oracle-cloud-unbound-pihole/">my other post&lt;/a>.&lt;/p>
+&lt;h2 id="deprovisioning">Deprovisioning&lt;/h2>
+&lt;p>To remove the instance and all associated resources, use the following command:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>terraform destroy
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This will tear down everything Terraform created, including the VM and any related services.&lt;/p></content></item><item><title>Setting Up a Pi-hole with WireGuard on an Always Free Oracle Cloud VM</title><link>https://sbarbett.github.io/reticulating-splines/posts/oracle-cloud-unbound-pihole/</link><pubDate>Thu, 30 Jan 2025 00:00:00 +0000</pubDate><guid>https://sbarbett.github.io/reticulating-splines/posts/oracle-cloud-unbound-pihole/</guid><description>&lt;h1 id="setting-up-a-pihole-with-wireguard-on-an-always-free-oracle-cloud-vm">Setting Up a Pihole with Wireguard on an Always Free Oracle Cloud VM&lt;/h1>
+&lt;p>About a week ago, I discovered that Oracle Cloud offers a free tier of virtual machines—not in the AWS &amp;ldquo;free for a year&amp;rdquo; sense, but free indefinitely (allegedly). The x86 instances come with 1GB of RAM and 1 vCPU, which isn’t much, but it’s enough for some basic workloads. I like to think of it as a Raspberry Pi Zero in the cloud.&lt;/p></description><content>&lt;h1 id="setting-up-a-pihole-with-wireguard-on-an-always-free-oracle-cloud-vm">Setting Up a Pihole with Wireguard on an Always Free Oracle Cloud VM&lt;/h1>
+&lt;p>About a week ago, I discovered that Oracle Cloud offers a free tier of virtual machines—not in the AWS &amp;ldquo;free for a year&amp;rdquo; sense, but free indefinitely (allegedly). The x86 instances come with 1GB of RAM and 1 vCPU, which isn’t much, but it’s enough for some basic workloads. I like to think of it as a Raspberry Pi Zero in the cloud.&lt;/p>
+&lt;p>Naturally, I started wondering what I could do with one of these, and the idea of setting up a cloud-hosted Pi-hole came to mind—an interesting little project.&lt;/p>
+&lt;h2 id="securing-the-resolver">Securing the Resolver&lt;/h2>
+&lt;p>Of course, running an open DNS resolver on the public internet is a terrible idea. If left unprotected, someone will eventually find it and abuse it for DNS amplification attacks. So, I needed a way to secure the connection between my home network and the Pi-hole in the cloud.&lt;/p>
+&lt;p>One option would be to restrict access using Oracle Cloud’s networking rules, only allowing connections from my home IP. But I’m on residential internet, and while my IP doesn’t change often, it could change, and I don’t want to deal with the hassle when that happens—DNS is critical infrastructure after all.&lt;/p>
+&lt;p>I also considered using Pi-hole’s and Unbound’s built-in access controls, but I don’t want this VM accessible publicly at all. Even if it only refuses unauthorized queries, just exposing it could impact its performance—and with just 1GB of RAM and 1 vCPU, there isn’t much power to spare.&lt;/p>
+&lt;p>So I landed on WireGuard, exposing only port 51820. This approach keeps things simple while securing all DNS traffic inside an encrypted tunnel—a solid solution.&lt;/p>
+&lt;h1 id="instance-set-up">Instance Set Up&lt;/h1>
+&lt;p>To create an &amp;ldquo;always free&amp;rdquo; VM, follow these steps in the Oracle Cloud Console.&lt;/p>
+&lt;ol>
+&lt;li>Click the &lt;strong>hamburger menu&lt;/strong> (☰) in the top-left corner and go to Instances.&lt;/li>
+&lt;li>Click &lt;strong>Create Instance&lt;/strong>.&lt;/li>
+&lt;/ol>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/instance-dashboard.jpg" alt="Screenshot of instance dashboard">&lt;/p>
+&lt;h2 id="choose-an-image">Choose An Image&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>Most of the defaults can remain the same.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Change the OS to Ubuntu Minimal (since plain Debian isn’t an option for some reason).&lt;/p>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/ubuntu-minimal.jpg" alt="Screenshot of Ubuntu Minimal">&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="select-a-shape">Select A Shape&lt;/h2>
+&lt;ul>
+&lt;li>The &lt;strong>shape&lt;/strong> should be &lt;code>Standard.A1.Flex&lt;/code>.&lt;/li>
+&lt;li>Make sure it says &lt;strong>&amp;ldquo;Always Free Eligible&amp;rdquo;&lt;/strong>.&lt;/li>
+&lt;/ul>
+&lt;h2 id="configure-networking">Configure Networking&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>If this is your &lt;strong>first&lt;/strong> instance, just use the &lt;strong>default VNIC&lt;/strong>.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Otherwise, create a &lt;strong>new VNIC&lt;/strong>.&lt;/p>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/vnic-setup.jpg" alt="Screenshot of VNICs">&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h2 id="download-your-ssh-key">Download your SSH key.&lt;/h2>
+&lt;ul>
+&lt;li>
+&lt;p>Download the &lt;strong>private key file&lt;/strong>—you’ll need this to log in.&lt;/p>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/download-key.jpg" alt="Screenshot of SSH key download">&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h1 id="accessing-the-instance">Accessing the Instance&lt;/h1>
+&lt;p>Once your Oracle Cloud instance is running, you can SSH into it from your local machine.&lt;/p>
+&lt;h2 id="set-up-your-ssh-key-linux">Set Up Your SSH Key (Linux)&lt;/h2>
+&lt;p>First, adjust the key’s permissions and move it to your SSH directory:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>chmod &lt;span style="color:#ae81ff">600&lt;/span> ~/Downloads/your-key.pem
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>mv ~/Downloads/your-key.pem ~/.ssh/ubuntu-pihole.key
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="create-an-ssh-alias-optional">Create an SSH Alias (Optional)&lt;/h2>
+&lt;p>To make connecting easier, add an alias to your &lt;code>~/.ssh/config&lt;/code> file:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>Host ubuntu-pihole
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> HostName &amp;lt;your-instance-ip&amp;gt;
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> User ubuntu
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> IdentityFile ~/.ssh/ubuntu-pihole.key
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="connect-to-the-instance">Connect to the Instance&lt;/h2>
+&lt;p>Now, you can simply run:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>ssh ubuntu-pihole
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="setting-up-dependencies">Setting Up Dependencies&lt;/h1>
+&lt;p>Once connected to your VM, &lt;strong>update the system&lt;/strong>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>sudo apt update &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> sudo apt full-upgrade -y
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="add-docker-sources">Add Docker Sources&lt;/h2>
+&lt;p>Follow the official &lt;a href="https://docs.docker.com/engine/install/ubuntu/">Docker Ubuntu installation guide&lt;/a>, or use these summarized steps:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>sudo apt-get install ca-certificates curl
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sudo install -m &lt;span style="color:#ae81ff">0755&lt;/span> -d /etc/apt/keyrings
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sudo chmod a+r /etc/apt/keyrings/docker.asc
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>echo &lt;span style="color:#ae81ff">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">&lt;/span> &lt;span style="color:#e6db74">&amp;#34;deb [arch=&lt;/span>&lt;span style="color:#66d9ef">$(&lt;/span>dpkg --print-architecture&lt;span style="color:#66d9ef">)&lt;/span>&lt;span style="color:#e6db74"> signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#e6db74"> &lt;/span>&lt;span style="color:#66d9ef">$(&lt;/span>. /etc/os-release &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> echo &lt;span style="color:#e6db74">&amp;#34;&lt;/span>$VERSION_CODENAME&lt;span style="color:#e6db74">&amp;#34;&lt;/span>&lt;span style="color:#66d9ef">)&lt;/span>&lt;span style="color:#e6db74"> stable&amp;#34;&lt;/span> | &lt;span style="color:#ae81ff">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">&lt;/span> sudo tee /etc/apt/sources.list.d/docker.list &amp;gt; /dev/null
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sudo apt-get update
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="install-docker">Install Docker&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="configure-docker-to-start-on-boot">Configure Docker to Start on Boot&lt;/h2>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>sudo systemctl enable docker.service
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sudo systemctl enable containerd.service
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="add-your-user-to-the-docker-group">Add Your User to the Docker Group&lt;/h2>
+&lt;p>This allows you to run &lt;code>docker&lt;/code> commands without &lt;code>sudo&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>sudo usermod -aG docker $USER
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then, &lt;strong>log out and back in&lt;/strong> for the group changes to apply.&lt;/p>
+&lt;h2 id="verify-the-installation">Verify the Installation&lt;/h2>
+&lt;p>Run:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>docker ps
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>If Docker is correctly installed, it should &lt;strong>run without requiring&lt;/strong> &lt;code>sudo&lt;/code>.&lt;/p>
+&lt;h1 id="installing-wireguard-pihole-and-unbound">Installing WireGuard, Pihole and Unbound&lt;/h1>
+&lt;h2 id="disable-systemd-resolved">Disable &lt;code>systemd-resolved&lt;/code>&lt;/h2>
+&lt;p>Since &lt;code>systemd-resolved&lt;/code> listens on port 53, it can interfere with Pi-hole. Disable it and set a public resolver (like Cloudflare) in &lt;code>/etc/resolv.conf&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>sudo systemctl disable --now systemd-resolved
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>sudo rm /etc/resolv.conf
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>echo &lt;span style="color:#e6db74">&amp;#34;nameserver 1.1.1.1&amp;#34;&lt;/span> | sudo tee /etc/resolv.conf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then restart Docker:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>sudo systemctl restart docker
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="set-up-your-docker-environment">Set Up Your Docker Environment&lt;/h2>
+&lt;p>Create a directory for your stack:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>mkdir ~/pihole-stack &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> cd ~/pihole-stack
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Create &lt;strong>blank configuration files&lt;/strong> for Unbound:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>mkdir -p ./etc-unbound
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>touch ./etc-unbound/a-records.conf ./etc-unbound/srv-records.conf ./etc-unbound/forward-records.conf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="create-the-docker-composeyml-file">Create the &lt;code>docker-compose.yml&lt;/code> File&lt;/h2>
+&lt;p>Inside &lt;code>~/pihole-stack&lt;/code>, create a new file called &lt;code>docker-compose.yml&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>nano docker-compose.yml
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Paste the following configuration:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">networks&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">dns_net&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">driver&lt;/span>: &lt;span style="color:#ae81ff">bridge&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ipam&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">config&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#f92672">subnet&lt;/span>: &lt;span style="color:#ae81ff">192.168.5.0&lt;/span>&lt;span style="color:#ae81ff">/24 &lt;/span> &lt;span style="color:#75715e"># Custom subnet for the Docker network&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">services&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">pihole&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">container_name&lt;/span>: &lt;span style="color:#ae81ff">pihole&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">image&lt;/span>: &lt;span style="color:#ae81ff">pihole/pihole:latest&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ports&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#34;53:53/tcp&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#34;53:53/udp&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#34;8080:80/tcp&amp;#34;&lt;/span> &lt;span style="color:#75715e"># Pi-hole Web UI&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">environment&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">WEBPASSWORD&lt;/span>: &lt;span style="color:#e6db74">&amp;#39;SOMETHING&amp;#39;&lt;/span> &lt;span style="color:#75715e"># Change this to your desired password&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">DNS1&lt;/span>: &lt;span style="color:#e6db74">&amp;#39;192.168.5.3&amp;#39;&lt;/span> &lt;span style="color:#75715e"># Unbound&amp;#39;s static IP&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">DNS2&lt;/span>: &lt;span style="color:#e6db74">&amp;#39;192.168.5.3&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">DNSMASQ_LISTENING&lt;/span>: &lt;span style="color:#e6db74">&amp;#39;all&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">FTLCONF_LOCAL_IPV4&lt;/span>: &lt;span style="color:#e6db74">&amp;#39;192.168.5.2&amp;#39;&lt;/span> &lt;span style="color:#75715e"># Pi-hole&amp;#39;s static IP&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">volumes&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#39;./etc-pihole:/etc/pihole&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#39;./etc-dnsmasq.d:/etc/dnsmasq.d&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">restart&lt;/span>: &lt;span style="color:#ae81ff">unless-stopped&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">depends_on&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">unbound&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">networks&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">dns_net&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ipv4_address&lt;/span>: &lt;span style="color:#ae81ff">192.168.5.2&lt;/span> &lt;span style="color:#75715e"># Static IP for Pi-hole&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">unbound&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">container_name&lt;/span>: &lt;span style="color:#ae81ff">unbound&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">image&lt;/span>: &lt;span style="color:#ae81ff">pedantic/unbound:latest&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">volumes&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#39;./etc-unbound:/opt/unbound/etc/unbound&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">restart&lt;/span>: &lt;span style="color:#ae81ff">unless-stopped&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">networks&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">dns_net&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ipv4_address&lt;/span>: &lt;span style="color:#ae81ff">192.168.5.3&lt;/span> &lt;span style="color:#75715e"># Static IP for Unbound&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">wireguard&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">container_name&lt;/span>: &lt;span style="color:#ae81ff">wireguard&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">image&lt;/span>: &lt;span style="color:#ae81ff">linuxserver/wireguard&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">cap_add&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">NET_ADMIN&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">SYS_MODULE&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">environment&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">PUID&lt;/span>: &lt;span style="color:#ae81ff">1000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">PGID&lt;/span>: &lt;span style="color:#ae81ff">1000&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">TZ&lt;/span>: &lt;span style="color:#ae81ff">Etc/UTC&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">SERVERPORT&lt;/span>: &lt;span style="color:#ae81ff">51820&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">PEERS&lt;/span>: &lt;span style="color:#ae81ff">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">PEERDNS&lt;/span>: &lt;span style="color:#ae81ff">192.168.5.2&lt;/span> &lt;span style="color:#75715e"># Pi-hole as DNS resolver&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">INTERNAL_SUBNET&lt;/span>: &lt;span style="color:#ae81ff">10.6.0.0&lt;/span>&lt;span style="color:#ae81ff">/24&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">volumes&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#39;./config:/config&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#39;/lib/modules:/lib/modules&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ports&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#e6db74">&amp;#34;51820:51820/udp&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">sysctls&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">net.ipv4.conf.all.src_valid_mark=1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">restart&lt;/span>: &lt;span style="color:#ae81ff">unless-stopped&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">depends_on&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> - &lt;span style="color:#ae81ff">pihole&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">networks&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">dns_net&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">ipv4_address&lt;/span>: &lt;span style="color:#ae81ff">192.168.5.4&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;em>Note: The Pi-hole web interface will only be accessible through WireGuard.&lt;/em>&lt;/p>
+&lt;h2 id="start-the-containers">Start the Containers&lt;/h2>
+&lt;p>Run:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>docker compose up -d
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Once everything is running, check the logs for any errors:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>docker compose logs -f
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="test-dns-resolution">Test DNS Resolution&lt;/h2>
+&lt;p>Install &lt;code>dnsutils&lt;/code> if it’s not already installed:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>sudo apt install dnsutils -y
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Now, test if Pi-hole is resolving queries:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>dig @127.0.0.1 www.google.com
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>If everything is working, you should see output like this:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>; &amp;lt;&amp;lt;&amp;gt;&amp;gt; DiG 9.18.30-0ubuntu0.20.04.1-Ubuntu &amp;lt;&amp;lt;&amp;gt;&amp;gt; @127.0.0.1 www.google.com
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>; &lt;span style="color:#f92672">(&lt;/span>&lt;span style="color:#ae81ff">1&lt;/span> server found&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>;; global options: +cmd
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>;; Got answer:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>;; -&amp;gt;&amp;gt;HEADER&lt;span style="color:#e6db74">&amp;lt;&amp;lt;- opco&lt;/span>de: QUERY, status: NOERROR, id: &lt;span style="color:#ae81ff">19037&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>;; flags: qr rd ra; QUERY: 1, ANSWER: 6, AUTHORITY: 0, ADDITIONAL: &lt;span style="color:#ae81ff">1&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>;; OPT PSEUDOSECTION:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>; EDNS: version: 0, flags:; udp: &lt;span style="color:#ae81ff">1232&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>;; QUESTION SECTION:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>;www.google.com. IN A
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>;; ANSWER SECTION:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>www.google.com. 300 IN A 142.251.179.106
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>www.google.com. 300 IN A 142.251.179.105
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>www.google.com. 300 IN A 142.251.179.103
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>www.google.com. 300 IN A 142.251.179.104
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>www.google.com. 300 IN A 142.251.179.147
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>www.google.com. 300 IN A 142.251.179.99
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>;; Query time: &lt;span style="color:#ae81ff">176&lt;/span> msec
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>;; SERVER: 127.0.0.1#53&lt;span style="color:#f92672">(&lt;/span>127.0.0.1&lt;span style="color:#f92672">)&lt;/span> &lt;span style="color:#f92672">(&lt;/span>UDP&lt;span style="color:#f92672">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>;; WHEN: Wed Jan &lt;span style="color:#ae81ff">29&lt;/span> 03:24:26 UTC &lt;span style="color:#ae81ff">2025&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>;; MSG SIZE rcvd: &lt;span style="color:#ae81ff">139&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h1 id="enable-logging-in-unbound">Enable Logging in Unbound&lt;/h1>
+&lt;p>To verify that &lt;strong>queries sent to Pi-hole are being properly forwarded to Unbound&lt;/strong>, we need to enable logging.&lt;/p>
+&lt;h2 id="edit-the-unbound-configuration">Edit the Unbound Configuration&lt;/h2>
+&lt;p>Open Unbound’s config file:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>nano ./etc-unbound/unbound.conf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Add/modify the following directives:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-yaml" data-lang="yaml">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#f92672">server&lt;/span>:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">verbosity&lt;/span>: &lt;span style="color:#ae81ff">3&lt;/span> &lt;span style="color:#75715e"># Increase logging verbosity (0-5, where 5 is the most detailed)&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">log-queries&lt;/span>: &lt;span style="color:#66d9ef">yes&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">log-replies&lt;/span>: &lt;span style="color:#66d9ef">yes&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">log-servfail&lt;/span>: &lt;span style="color:#66d9ef">yes&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#f92672">logfile&lt;/span>: &lt;span style="color:#e6db74">&amp;#34;/opt/unbound/etc/unbound/unbound.log&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="restart-the-stack">Restart the Stack&lt;/h2>
+&lt;p>Restart your Docker containers to apply the changes:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>docker compose down &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> docker compose up -d
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="verify-queries-are-routed-through-unbound">Verify Queries Are Routed Through Unbound&lt;/h2>
+&lt;p>Run a &lt;code>dig&lt;/code> query against &lt;code>127.0.0.1&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>dig @127.0.0.1 facebook.com
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then check the Docker logs:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>docker compose logs -f
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>unbound | &lt;span style="color:#f92672">[&lt;/span>1738122055&lt;span style="color:#f92672">]&lt;/span> unbound&lt;span style="color:#f92672">[&lt;/span>1:0&lt;span style="color:#f92672">]&lt;/span> info: iterator operate: query facebook.com. DS IN
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>unbound | &lt;span style="color:#f92672">[&lt;/span>1738122055&lt;span style="color:#f92672">]&lt;/span> unbound&lt;span style="color:#f92672">[&lt;/span>1:0&lt;span style="color:#f92672">]&lt;/span> info: response &lt;span style="color:#66d9ef">for&lt;/span> facebook.com. DS IN
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>unbound | &lt;span style="color:#f92672">[&lt;/span>1738122055&lt;span style="color:#f92672">]&lt;/span> unbound&lt;span style="color:#f92672">[&lt;/span>1:0&lt;span style="color:#f92672">]&lt;/span> info: reply from &amp;lt;com.&amp;gt; 192.12.94.30#53
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>unbound | &lt;span style="color:#f92672">[&lt;/span>1738122055&lt;span style="color:#f92672">]&lt;/span> unbound&lt;span style="color:#f92672">[&lt;/span>1:0&lt;span style="color:#f92672">]&lt;/span> info: query response was nodata ANSWER
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>unbound | &lt;span style="color:#f92672">[&lt;/span>1738122055&lt;span style="color:#f92672">]&lt;/span> unbound&lt;span style="color:#f92672">[&lt;/span>1:0&lt;span style="color:#f92672">]&lt;/span> info: finishing processing &lt;span style="color:#66d9ef">for&lt;/span> facebook.com. DS IN
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="how-it-works">How It Works&lt;/h2>
+&lt;ul>
+&lt;li>&lt;strong>Pi-hole is the entry point&lt;/strong> for DNS queries, listening on &lt;strong>port 53&lt;/strong>.&lt;/li>
+&lt;li>If a query is &lt;strong>cached or blocked&lt;/strong>, Pi-hole handles it immediately.&lt;/li>
+&lt;li>Otherwise, Pi-hole &lt;strong>forwards the query&lt;/strong> to the Unbound container within the Docker network.&lt;/li>
+&lt;li>Unbound &lt;strong>performs full recursive DNS resolution&lt;/strong>.&lt;/li>
+&lt;/ul>
+&lt;h1 id="connecting-to-wireguard">Connecting to WireGuard&lt;/h1>
+&lt;p>To allow ingress UDP traffic for WireGuard, we need to configure Oracle Cloud&amp;rsquo;s firewall rules.&lt;/p>
+&lt;h2 id="allow-udp-traffic-on-port-51820">Allow UDP Traffic on Port 51820&lt;/h2>
+&lt;ol>
+&lt;li>Go to &lt;strong>Instances&lt;/strong> in the Oracle Cloud Console.&lt;/li>
+&lt;li>Click on your &lt;strong>Pihole instance&lt;/strong>.&lt;/li>
+&lt;li>Scroll down and click on &lt;strong>&amp;ldquo;Attached VNICs&amp;rdquo;&lt;/strong>.&lt;/li>
+&lt;/ol>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/attached-vnics.jpg" alt="Screenshot of attached VNICs">&lt;/p>
+&lt;ol start="4">
+&lt;li>Click on your &lt;strong>subnet&lt;/strong>.&lt;/li>
+&lt;li>Click on your &lt;strong>security list&lt;/strong>&lt;/li>
+&lt;/ol>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/security-lists.jpg" alt="Screenshot of security lists">&lt;/p>
+&lt;ol start="6">
+&lt;li>Add a new &lt;strong>ingress rule&lt;/strong> for &lt;strong>UDP traffic&lt;/strong> on &lt;strong>port 51820&lt;/strong>, allowing connections &lt;strong>from 0.0.0.0/0&lt;/strong>.&lt;/li>
+&lt;/ol>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/ingress-rules.jpg" alt="Screenshot of ingress rules">&lt;/p>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/add-ingress.jpg" alt="Screenshot of add ingress page">&lt;/p>
+&lt;h2 id="retrieve-your-wireguard-configuration">Retrieve Your WireGuard Configuration&lt;/h2>
+&lt;p>Once WireGuard is running, the client configuration file is automatically generated on your VM at:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>config/peer1/peer1.conf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>To use this configuration on your local machine, copy the file using one of the following methods:&lt;/p>
+&lt;h3 id="option-1-copy-via-scp">Option 1: Copy via SCP&lt;/h3>
+&lt;p>Run this command from your local machine:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>mkdir ~/.wireguard &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> &lt;span style="color:#ae81ff">\
+&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#ae81ff">&lt;/span>scp ubuntu-pihole:~/pihole-stack/config/peer1/peer1.conf ~/.wireguard/wg-pihole.conf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="option-2-manually-copy-the-contents">Option 2: Manually Copy the Contents&lt;/h3>
+&lt;p>Alternatively, open the file on your VM:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>cat ~/pihole-stack/config/peer1/peer1.conf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>Then manually copy the contents and save them to &lt;code>~/.wireguard/wg-pihole.conf&lt;/code> on your local machine.&lt;/p>
+&lt;h2 id="example-wireguard-client-configuration">Example WireGuard Client Configuration&lt;/h2>
+&lt;p>Your &lt;strong>WireGuard client configuration&lt;/strong> should look something like this:&lt;/p>
+&lt;pre tabindex="0">&lt;code>[Interface]
+Address = 10.6.0.2
+PrivateKey = redacted
+ListenPort = 51820
+DNS = 192.168.5.2 # Pi-hole as the DNS server
+[Peer]
+PublicKey = redacted
+PresharedKey = redacted
+Endpoint = redacted:51820
+AllowedIPs = 0.0.0.0/0, ::/0
+&lt;/code>&lt;/pre>&lt;p>&lt;em>Note: The &lt;code>DNS = 192.168.5.2&lt;/code> &lt;strong>ensures all DNS traffic is routed through Pi-hole&lt;/strong> while connected.&lt;/em>&lt;/p>
+&lt;h2 id="connect-to-wireguard">Connect to WireGuard&lt;/h2>
+&lt;p>To enable your connection, use &lt;code>wg-quick&lt;/code>. This tool is included in the &lt;code>wireguard-tools&lt;/code> package (available via &lt;code>apt&lt;/code> or &lt;code>pacman&lt;/code> on Linux and &lt;code>brew&lt;/code> on macOS).&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>wg-quick up ~/.wireguard/wg-pihole.conf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h2 id="verify-the-connection">Verify the Connection&lt;/h2>
+&lt;p>If everything is configured correctly, you should now be &lt;strong>connected to your VPN&lt;/strong> and all DNS traffic should be &lt;strong>routed through Pi-hole&lt;/strong> while the connection is active.&lt;/p>
+&lt;p>To confirm your connection:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>wg show
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>You should see an active session with data being transferred.&lt;/p>
+&lt;p>To verify that DNS queries are resolving through Pi-hole, run:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>dig @192.168.5.2 google.com
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>If this returns a valid response, your setup is working!&lt;/p>
+&lt;h1 id="accessing-the-pihole-interface-and-testing">Accessing the Pihole Interface and Testing&lt;/h1>
+&lt;p>Now that everything is set up, let&amp;rsquo;s access the Pi-hole web interface and test if it&amp;rsquo;s working correctly.&lt;/p>
+&lt;h2 id="open-the-pi-hole-web-interface">Open the Pi-hole Web Interface&lt;/h2>
+&lt;p>Since Pi-hole has &lt;strong>a static IP inside the Docker network&lt;/strong>, you can access the web UI at:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>http://192.168.5.2
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This will take you to the admin login page. Enter the password you set in your &lt;code>docker-compose.yml&lt;/code> file.&lt;/p>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-login.jpg" alt="Screenshot of login page">&lt;/p>
+&lt;h2 id="explore-the-pi-hole-dashboard">Explore the Pi-hole Dashboard&lt;/h2>
+&lt;p>Once logged in, you&amp;rsquo;ll see real-time DNS activity and other Pi-hole-related settings.&lt;/p>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-dash.jpg" alt="Screenshot of dashboard">&lt;/p>
+&lt;p>Pi-hole works out of the box with the default adlists.&lt;/p>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-adlists.jpg" alt="Screenshot of adlists">&lt;/p>
+&lt;h2 id="verify-unbound-as-the-upstream-resolver">Verify Unbound as the Upstream Resolver&lt;/h2>
+&lt;p>Under &lt;strong>Settings -&amp;gt; DNS&lt;/strong>, you should see Unbound’s Docker network IP (&lt;code>192.168.5.3&lt;/code>) listed as the upstream DNS resolver.&lt;/p>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-settings.jpg" alt="Screenshot of settings">&lt;/p>
+&lt;p>This confirms that Pi-hole is forwarding DNS queries to Unbound instead of an external provider.&lt;/p>
+&lt;h2 id="test-domain-blocking">Test Domain Blocking&lt;/h2>
+&lt;p>To confirm that Pi-hole is actively blocking domains, follow these steps:&lt;/p>
+&lt;ol>
+&lt;li>In the Pi-hole admin interface, go to Domain Management.&lt;/li>
+&lt;li>Add a test domain to the blacklist (e.g., example.com).&lt;/li>
+&lt;/ol>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-mgmt.jpg" alt="Screenshot of domain management">&lt;/p>
+&lt;ol start="3">
+&lt;li>Now try to go to that domain in your browser.&lt;/li>
+&lt;/ol>
+&lt;p>&lt;img src="https://sbarbett.github.io/reticulating-splines/img/pihole-blocked.jpg" alt="Screenshot of blocked page">&lt;/p>
+&lt;p>Voila! The request is blocked, meaning Pi-hole is working as expected.&lt;/p>
+&lt;h1 id="disabling-logging-and-disconnecting-from-wireguard">Disabling Logging and Disconnecting From Wireguard&lt;/h1>
+&lt;h2 id="disable-unbound-logging-optional">Disable Unbound Logging (Optional)&lt;/h2>
+&lt;p>Once you&amp;rsquo;re done testing, you may want to disable Unbound logging to reduce unnecessary disk writes.&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>Open the Unbound configuration file:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>nano ./etc-unbound/unbound.conf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Either set logging values to no:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>log-queries: no
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>log-replies: no
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>log-servfail: no
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>&lt;strong>OR&lt;/strong> redirect logs to &lt;code>/dev/null&lt;/code>:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>logfile: &lt;span style="color:#e6db74">&amp;#34;/dev/null&amp;#34;&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;li>
+&lt;p>Restart the stack to apply changes:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>docker compose down &lt;span style="color:#f92672">&amp;amp;&amp;amp;&lt;/span> docker compose up -d
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;/li>
+&lt;/ul>
+&lt;h2 id="disconnect-from-wireguard">Disconnect from WireGuard&lt;/h2>
+&lt;p>To disconnect from your WireGuard VPN, simply run:&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-bash" data-lang="bash">&lt;span style="display:flex;">&lt;span>wg-quick down ~/.wireguard/wg-pihole.conf
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;p>This will terminate the VPN connection and restore your default network settings.&lt;/p>
+&lt;h1 id="thats-it">That’s It!&lt;/h1>
+&lt;p>Your Pi-hole + Unbound setup on an Always Free Oracle Cloud VM is now complete!&lt;/p>
+&lt;p>Thank you for coming to my TED Talk.&lt;/p></content></item></channel></rss>

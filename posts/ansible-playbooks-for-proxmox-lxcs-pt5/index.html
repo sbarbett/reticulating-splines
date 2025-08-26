@@ -1,0 +1,503 @@
+<!doctype html><html lang=en><head><title>Ansible Playbooks for Proxmox and LXCs Part 5 :: reticulating splines</title><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=description content="In Part 5, I completely refactored the project to follow Ansible best practices. I split the monolithic role into distinct, focused roles and packaged everything into an Ansible collection. This reorganization makes the workflow more modular, maintainable, and easier to share on Ansible Galaxy."><meta name=keywords content><meta name=robots content="noodp"><link rel=canonical href=https://sbarbett.github.io/reticulating-splines/posts/ansible-playbooks-for-proxmox-lxcs-pt5/><link rel=stylesheet href=https://sbarbett.github.io/reticulating-splines/css/buttons.min.3be0bba9fe18b5b77c8fe97175a5ff803eb3b8d6b94a4c43e6c842bc229040f1.css><link rel=stylesheet href=https://sbarbett.github.io/reticulating-splines/css/code.min.628b83582b7e3ce5fbec137a2c22e9dd728066c2a25433bc713f3c02f60e9d0d.css><link rel=stylesheet href=https://sbarbett.github.io/reticulating-splines/css/fonts.min.90c955c31dd7c0e05aae3d4f583d4d8a2af799d69c961337eaf2a825063a55dd.css><link rel=stylesheet href=https://sbarbett.github.io/reticulating-splines/css/footer.min.2e3eb191baee58dd05a9f0104ac1fab0827bca7c64dafe0b2579f934c33a1d69.css><link rel=stylesheet href=https://sbarbett.github.io/reticulating-splines/css/gist.min.a751e8b0abe1ba8bc53ced52a38b19d8950fe78ca29454ea8c2595cf26aad5c0.css><link rel=stylesheet href=https://sbarbett.github.io/reticulating-splines/css/header.min.b6fb4423cf82a9f9d7abc9cd010223fa3d70a6526a3f28f8e17d814c06e18f9e.css><link rel=stylesheet href=https://sbarbett.github.io/reticulating-splines/css/main.min.ddc450348e2172fcf09bb193f216484ec68c51f52c43c89268b93314cb7805ae.css><link rel=stylesheet href=https://sbarbett.github.io/reticulating-splines/css/menu.min.036f7f3c01b34c968c3c11f671600515ea8247bdb345694d1c244c92edc67a24.css><link rel=stylesheet href=https://sbarbett.github.io/reticulating-splines/css/pagination.min.82f6400eae7c7c6dc3c866733c2ec0579e4089608fea69400ff85b3880aa0d3c.css><link rel=stylesheet href=https://sbarbett.github.io/reticulating-splines/css/post.min.f22509cc505be9b59106980693175422c998445b17d3b4bb9c154dac90186ae9.css><link rel=stylesheet href=https://sbarbett.github.io/reticulating-splines/css/prism.min.9023bbc24533d09e97a51a0a42a5a7bfe4c591ae167c5551fb1d2191d11977c0.css><link rel=stylesheet href=https://sbarbett.github.io/reticulating-splines/css/syntax.min.28d2d93e80d9fc88428d8438285537c167ec74544ef064da1cc0313254904b54.css><link rel=stylesheet href=https://sbarbett.github.io/reticulating-splines/css/terminal.min.f00ec1a3d030ac6d3aed932564fc961b9980150830dc8ef37f964f2858ccf558.css><link rel=stylesheet href=https://sbarbett.github.io/reticulating-splines/css/terms.min.b81791663c3790e738e571cdbf802312390d30e4b1d8dc9d814a5b5454d0ac11.css><link rel=stylesheet href=https://sbarbett.github.io/reticulating-splines/style.css><link rel="shortcut icon" href=https://sbarbett.github.io/reticulating-splines/favicon.png><link rel=apple-touch-icon href=https://sbarbett.github.io/reticulating-splines/apple-touch-icon.png><meta name=twitter:card content="summary"><meta name=twitter:site content="https://shane.barbetta.me"><meta name=twitter:creator content><meta property="og:locale" content="en"><meta property="og:type" content="article"><meta property="og:title" content="Ansible Playbooks for Proxmox and LXCs Part 5"><meta property="og:description" content="In Part 5, I completely refactored the project to follow Ansible best practices. I split the monolithic role into distinct, focused roles and packaged everything into an Ansible collection. This reorganization makes the workflow more modular, maintainable, and easier to share on Ansible Galaxy."><meta property="og:url" content="https://sbarbett.github.io/reticulating-splines/posts/ansible-playbooks-for-proxmox-lxcs-pt5/"><meta property="og:site_name" content="reticulating splines"><meta property="og:image" content="https://sbarbett.github.io/reticulating-splines/og-image.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="627"><meta property="article:published_time" content="2025-02-17 00:00:00 +0000 UTC"></head><body><div class="container full"><header class=header><div class=header__inner><div class=header__logo><a href=/><div class=logo>reticulating splines</div></a></div><ul class="menu menu--mobile"><li class=menu__trigger>Menu&nbsp;▾</li><li><ul class=menu__dropdown><li><a href=https://shane.barbetta.me>about</a></li></ul></li></ul></div><nav class=navigation-menu><ul class="navigation-menu__inner menu--desktop"><li><a href=https://shane.barbetta.me>about</a></li></ul></nav></header><div class=content><article class=post><h1 class=post-title><a href=https://sbarbett.github.io/reticulating-splines/posts/ansible-playbooks-for-proxmox-lxcs-pt5/>Ansible Playbooks for Proxmox and LXCs Part 5</a></h1><div class=post-meta><time class=post-date>2025-02-17</time></div><span class=post-tags>#<a href=https://sbarbett.github.io/reticulating-splines/tags/proxmox/>proxmox</a>&nbsp;
+#<a href=https://sbarbett.github.io/reticulating-splines/tags/ansible/>ansible</a>&nbsp;</span><div class=post-content><div><h1 id=ansible-playbooks-for-proxmox-and-lxcs---part-5>Ansible Playbooks for Proxmox and LXCs - Part 5<a href=#ansible-playbooks-for-proxmox-and-lxcs---part-5 class=hanchor arialabel=Anchor>#</a></h1><p>This role is a complete disappointment and defies Ansible best practices. Philosophically speaking, a role should focus on doing a single task well and not be all over the place. Therefore, I&rsquo;m going to split up the functionality we&rsquo;ve created thus far into separate roles and move some things around.</p><h2 id=adding-a-couple-things-to-the-vault>Adding a Couple Things to the Vault<a href=#adding-a-couple-things-to-the-vault class=hanchor arialabel=Anchor>#</a></h2><p>All properties pertaining specifically to the Proxmox instance itself (not container settings) should be stored in the vault. Most of our Proxmox-related values are already in the vault, but I&rsquo;d previously put the <code>proxmox_api_host</code> and <code>proxmox_node</code> in my role defaults. I&rsquo;m simply moving those to the vault. Edit your vault with the following:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>ansible-vault edit vars/proxmox-vault.yml --ask-vault-pass
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>proxmox_api_host</span>: <span style=color:#e6db74>&#34;proxmox.example.com&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>proxmox_api_user</span>: <span style=color:#e6db74>&#34;root@pam&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>proxmox_node</span>: <span style=color:#e6db74>&#34;pve&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>proxmox_api_id</span>: <span style=color:#e6db74>&#34;ansible&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>proxmox_api_secret</span>: <span style=color:#e6db74>&#34;your_secret&#34;</span>
+</span></span></code></pre></div><h2 id=creating-a-proxmox_provision-role>Creating a <code>proxmox_provision</code> Role<a href=#creating-a-proxmox_provision-role class=hanchor arialabel=Anchor>#</a></h2><p>This role will specifically handle creating and starting up the LXCs. Initialize a new role in the roles directory:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>ansible-galaxy init roles/proxmox_provision
+</span></span></code></pre></div><p>I want to add some important logic here—when the container is already provisioned and running, don&rsquo;t attempt to wait and start the container. This was a massive pain when I was testing, since Ansible will fail if the container is already started, and I had to keep stopping the container when testing the script. Since the community module for Proxmox does not appear to have a way to retrieve info for an LXC, we have to write another script using the <code>proxmoxer</code> module. It&rsquo;s not much different from the one we wrote to wait for the LXC to finish spinning up.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#75715e>#!/usr/bin/env python3</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> sys
+</span></span><span style=display:flex><span><span style=color:#f92672>import</span> argparse
+</span></span><span style=display:flex><span><span style=color:#f92672>from</span> proxmoxer <span style=color:#f92672>import</span> ProxmoxAPI
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>parser <span style=color:#f92672>=</span> argparse<span style=color:#f92672>.</span>ArgumentParser(
+</span></span><span style=display:flex><span>    description<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;Check if a Proxmox LXC container is running.&#34;</span>
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>parser<span style=color:#f92672>.</span>add_argument(<span style=color:#e6db74>&#34;--host&#34;</span>, required<span style=color:#f92672>=</span><span style=color:#66d9ef>True</span>, help<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;Proxmox API host&#34;</span>)
+</span></span><span style=display:flex><span>parser<span style=color:#f92672>.</span>add_argument(<span style=color:#e6db74>&#34;--user&#34;</span>, required<span style=color:#f92672>=</span><span style=color:#66d9ef>True</span>, help<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;Proxmox API user&#34;</span>)
+</span></span><span style=display:flex><span>parser<span style=color:#f92672>.</span>add_argument(<span style=color:#e6db74>&#34;--token_name&#34;</span>, required<span style=color:#f92672>=</span><span style=color:#66d9ef>True</span>, help<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;Proxmox API token name&#34;</span>)
+</span></span><span style=display:flex><span>parser<span style=color:#f92672>.</span>add_argument(<span style=color:#e6db74>&#34;--token_value&#34;</span>, required<span style=color:#f92672>=</span><span style=color:#66d9ef>True</span>, help<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;Proxmox API token secret&#34;</span>)
+</span></span><span style=display:flex><span>parser<span style=color:#f92672>.</span>add_argument(<span style=color:#e6db74>&#34;--node&#34;</span>, required<span style=color:#f92672>=</span><span style=color:#66d9ef>True</span>, help<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;Proxmox node name&#34;</span>)
+</span></span><span style=display:flex><span>parser<span style=color:#f92672>.</span>add_argument(<span style=color:#e6db74>&#34;--vmid&#34;</span>, type<span style=color:#f92672>=</span>int, required<span style=color:#f92672>=</span><span style=color:#66d9ef>True</span>, help<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;VMID of the container&#34;</span>)
+</span></span><span style=display:flex><span>args <span style=color:#f92672>=</span> parser<span style=color:#f92672>.</span>parse_args()
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>proxmox <span style=color:#f92672>=</span> ProxmoxAPI(
+</span></span><span style=display:flex><span>    args<span style=color:#f92672>.</span>host,
+</span></span><span style=display:flex><span>    user<span style=color:#f92672>=</span>args<span style=color:#f92672>.</span>user,
+</span></span><span style=display:flex><span>    token_name<span style=color:#f92672>=</span>args<span style=color:#f92672>.</span>token_name,
+</span></span><span style=display:flex><span>    token_value<span style=color:#f92672>=</span>args<span style=color:#f92672>.</span>token_value,
+</span></span><span style=display:flex><span>    verify_ssl<span style=color:#f92672>=</span><span style=color:#66d9ef>False</span>,
+</span></span><span style=display:flex><span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>try</span>:
+</span></span><span style=display:flex><span>    status_info <span style=color:#f92672>=</span> proxmox<span style=color:#f92672>.</span>nodes(args<span style=color:#f92672>.</span>node)<span style=color:#f92672>.</span>lxc(args<span style=color:#f92672>.</span>vmid)<span style=color:#f92672>.</span>status<span style=color:#f92672>.</span>current<span style=color:#f92672>.</span>get()
+</span></span><span style=display:flex><span>    current_status <span style=color:#f92672>=</span> status_info<span style=color:#f92672>.</span>get(<span style=color:#e6db74>&#39;status&#39;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>if</span> current_status <span style=color:#f92672>==</span> <span style=color:#e6db74>&#39;running&#39;</span>:
+</span></span><span style=display:flex><span>        print(<span style=color:#e6db74>f</span><span style=color:#e6db74>&#34;Container </span><span style=color:#e6db74>{</span>args<span style=color:#f92672>.</span>vmid<span style=color:#e6db74>}</span><span style=color:#e6db74> is running.&#34;</span>)
+</span></span><span style=display:flex><span>        sys<span style=color:#f92672>.</span>exit(<span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>else</span>:
+</span></span><span style=display:flex><span>        print(<span style=color:#e6db74>f</span><span style=color:#e6db74>&#34;Container </span><span style=color:#e6db74>{</span>args<span style=color:#f92672>.</span>vmid<span style=color:#e6db74>}</span><span style=color:#e6db74> exists but is not running (status: </span><span style=color:#e6db74>{</span>current_status<span style=color:#e6db74>}</span><span style=color:#e6db74>).&#34;</span>)
+</span></span><span style=display:flex><span>        sys<span style=color:#f92672>.</span>exit(<span style=color:#ae81ff>1</span>)
+</span></span><span style=display:flex><span><span style=color:#66d9ef>except</span> <span style=color:#a6e22e>Exception</span> <span style=color:#66d9ef>as</span> e:
+</span></span><span style=display:flex><span>    print(<span style=color:#e6db74>f</span><span style=color:#e6db74>&#34;Error retrieving container status: </span><span style=color:#e6db74>{</span>e<span style=color:#e6db74>}</span><span style=color:#e6db74>&#34;</span>, file<span style=color:#f92672>=</span>sys<span style=color:#f92672>.</span>stderr)
+</span></span><span style=display:flex><span>    sys<span style=color:#f92672>.</span>exit(<span style=color:#ae81ff>1</span>)
+</span></span></code></pre></div><p>Save that as <code>check_container_running.py</code> in <code>proxmox_provision/files</code> and make it executable (<code>chmod +x</code>). Also move the existing <code>wait_for_container.py</code> file over. Then add the following files to your <code>tasks</code> directory in the new role.</p><h3 id=precheckyml><code>precheck.yml</code><a href=#precheckyml class=hanchor arialabel=Anchor>#</a></h3><p>This will set a boolean if the container is already running.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>---
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Check if the container is already running</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>command</span>: &gt;<span style=color:#e6db74>
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    {{ role_path }}/files/check_container_running.py
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --host &#34;{{ proxmox_api_host }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --user &#34;{{ proxmox_api_user }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --token_name &#34;{{ proxmox_api_id }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --token_value &#34;{{ proxmox_api_secret }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --node &#34;{{ proxmox_node }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --vmid &#34;{{ container.vmid }}&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>delegate_to</span>: <span style=color:#ae81ff>localhost</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>register</span>: <span style=color:#ae81ff>container_status</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>ignore_errors</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Set fact whether container is running</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>set_fact</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>container_already_running</span>: <span style=color:#e6db74>&#34;{{ container_status.rc == 0 }}&#34;</span>
+</span></span></code></pre></div><h3 id=createyml><code>create.yml</code><a href=#createyml class=hanchor arialabel=Anchor>#</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>---
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Create LXC container on Proxmox</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>community.general.proxmox</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>api_host</span>: <span style=color:#e6db74>&#34;{{ proxmox_api_host }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>api_user</span>: <span style=color:#e6db74>&#34;{{ proxmox_api_user }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>api_token_id</span>: <span style=color:#e6db74>&#34;{{ proxmox_api_id }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>api_token_secret</span>: <span style=color:#e6db74>&#34;{{ proxmox_api_secret }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>node</span>: <span style=color:#e6db74>&#34;{{ proxmox_node }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>vmid</span>: <span style=color:#e6db74>&#34;{{ container.vmid }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>hostname</span>: <span style=color:#e6db74>&#34;{{ container.hostname }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ostemplate</span>: <span style=color:#e6db74>&#34;{{ container.ostemplate }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>storage</span>: <span style=color:#e6db74>&#34;{{ container.storage }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>cores</span>: <span style=color:#e6db74>&#34;{{ container.cores }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>memory</span>: <span style=color:#e6db74>&#34;{{ container.memory }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>swap</span>: <span style=color:#e6db74>&#34;{{ container.swap }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>disk</span>: <span style=color:#e6db74>&#34;{{ container.disk }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>netif</span>: <span style=color:#e6db74>&#39;{&#34;net0&#34;: &#34;{{ container.net }}&#34;}&#39;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>password</span>: <span style=color:#e6db74>&#34;{{ container.password | default(omit) }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>onboot</span>: <span style=color:#e6db74>&#34;{{ container.onboot | default(false) }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>startup</span>: <span style=color:#e6db74>&#34;{{ container.startup | default(omit) }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>pubkey</span>: <span style=color:#e6db74>&#34;{{ lookup(&#39;file&#39;, container.pubkey_file) | default(omit) }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>features</span>: <span style=color:#e6db74>&#34;{{ container.features | default(omit) }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>state</span>: <span style=color:#ae81ff>present</span>
+</span></span></code></pre></div><h3 id=waityml><code>wait.yml</code><a href=#waityml class=hanchor arialabel=Anchor>#</a></h3><p>Note that if the container is already running this is skipped.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>---
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Wait for container to be registered with expected hostname</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>command</span>: &gt;<span style=color:#e6db74>
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    {{ role_path }}/files/wait_for_container.py
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --host &#34;{{ proxmox_api_host }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --user &#34;{{ proxmox_api_user }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --token_name &#34;{{ proxmox_api_id }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --token_value &#34;{{ proxmox_api_secret }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --node &#34;{{ proxmox_node }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --vmid &#34;{{ container.vmid }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --expected-hostname &#34;{{ container.hostname }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --retries 10
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --delay 3</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>delegate_to</span>: <span style=color:#ae81ff>localhost</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>register</span>: <span style=color:#ae81ff>container_status</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>until</span>: <span style=color:#ae81ff>container_status.rc == 0</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>retries</span>: <span style=color:#ae81ff>10</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>delay</span>: <span style=color:#ae81ff>3</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>when</span>: <span style=color:#ae81ff>not (container_already_running | default(false))</span>
+</span></span></code></pre></div><h3 id=startyml><code>start.yml</code><a href=#startyml class=hanchor arialabel=Anchor>#</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>---
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Ensure LXC container is started on Proxmox</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>community.general.proxmox</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>api_host</span>: <span style=color:#e6db74>&#34;{{ proxmox_api_host }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>api_user</span>: <span style=color:#e6db74>&#34;{{ proxmox_api_user }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>api_token_id</span>: <span style=color:#e6db74>&#34;{{ proxmox_api_id }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>api_token_secret</span>: <span style=color:#e6db74>&#34;{{ proxmox_api_secret }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>node</span>: <span style=color:#e6db74>&#34;{{ proxmox_node }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>vmid</span>: <span style=color:#e6db74>&#34;{{ container.vmid }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>state</span>: <span style=color:#ae81ff>started</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>register</span>: <span style=color:#ae81ff>start_result</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>failed_when</span>: <span style=color:#ae81ff>start_result.failed and (&#39;already running&#39; not in start_result.msg)</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>when</span>: <span style=color:#ae81ff>not (container_already_running | default(false))</span>
+</span></span></code></pre></div><h3 id=mainyml><code>main.yml</code><a href=#mainyml class=hanchor arialabel=Anchor>#</a></h3><p>This file already exists by default - modify it with the following:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>---
+</span></span><span style=display:flex><span><span style=color:#75715e># Pre-check: Determine if container is already running</span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>include_tasks</span>: <span style=color:#ae81ff>precheck.yml</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Run the creation task</span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>include_tasks</span>: <span style=color:#ae81ff>create.yml</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Wait until the container is properly registered</span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>include_tasks</span>: <span style=color:#ae81ff>wait.yml</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Start the container</span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>include_tasks</span>: <span style=color:#ae81ff>start.yml</span>
+</span></span></code></pre></div><h2 id=creating-a-container_inventory-role>Creating a <code>container_inventory</code> Role<a href=#creating-a-container_inventory-role class=hanchor arialabel=Anchor>#</a></h2><p>We will have a separate role strictly for iterating through all of the containers we&rsquo;ve created, retrieving their IPs, and creating groups of dynamic hosts for further tasks.</p><p>Copy the <code>get_container_ip.py</code> script to this container&rsquo;s <code>files</code> directory, then in <code>tasks</code> create the following.</p><h3 id=inventorypy><code>inventory.py</code><a href=#inventorypy class=hanchor arialabel=Anchor>#</a></h3><p>This will get the IP of your containers using the script, then build your groups that will later be enumerated over for other tasks. Note that some of the container parameters have changed, since I&rsquo;ve nested the non-Proxmox-related LXC settings inside a <code>config</code> dictionary.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>---
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Retrieve container IP via DHCP using proxmoxer</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>command</span>: &gt;<span style=color:#e6db74>
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    {{ role_path }}/files/get_container_ip.py
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --host &#34;{{ proxmox_api_host }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --user &#34;{{ proxmox_api_user }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --token_name &#34;{{ proxmox_api_id }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --token_value &#34;{{ proxmox_api_secret }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --node &#34;{{ proxmox_node }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --vmid &#34;{{ container.vmid }}&#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --retries 10
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>    --delay 3</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>register</span>: <span style=color:#ae81ff>ip_result</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>changed_when</span>: <span style=color:#66d9ef>false</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Set container IP fact</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>set_fact</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>container_ip</span>: <span style=color:#e6db74>&#34;{{ ip_result.stdout }}&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Debug - Show container IP</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>debug</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>msg</span>: <span style=color:#e6db74>&#34;Container IP is: {{ container_ip }}&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Add container to dynamic inventory (as root)</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>add_host</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>name</span>: <span style=color:#e6db74>&#34;lxc_{{ container.vmid }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>groups</span>: <span style=color:#ae81ff>proxmox_containers</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_host</span>: <span style=color:#e6db74>&#34;{{ container_ip }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_connection</span>: <span style=color:#ae81ff>ssh</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_user</span>: <span style=color:#ae81ff>root</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_ssh_private_key_file</span>: <span style=color:#e6db74>&#34;{{ container.config.private_key }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_python_interpreter</span>: <span style=color:#ae81ff>/usr/bin/python3</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>container</span>: <span style=color:#e6db74>&#34;{{ container }}&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>when</span>: <span style=color:#ae81ff>container.config.initial_setup | default(false)</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Add container to dynamic inventory (non-root for extras)</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>add_host</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>name</span>: <span style=color:#e6db74>&#34;lxc_{{ container.vmid }}_user&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>groups</span>: <span style=color:#ae81ff>proxmox_containers_extras</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_host</span>: <span style=color:#e6db74>&#34;{{ container_ip }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_connection</span>: <span style=color:#ae81ff>ssh</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_user</span>: <span style=color:#e6db74>&#34;{{ container.config.username }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_ssh_private_key_file</span>: <span style=color:#e6db74>&#34;{{ container.config.private_key }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_python_interpreter</span>: <span style=color:#ae81ff>/usr/bin/python3</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>container</span>: <span style=color:#e6db74>&#34;{{ container }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_become_method</span>: <span style=color:#ae81ff>sudo</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>when</span>: <span style=color:#ae81ff>container.config.install_extras | default(false) and container.config.initial_setup | default(false)</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Add container to dynamic inventory for docker setup</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>add_host</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>name</span>: <span style=color:#e6db74>&#34;lxc_{{ container.vmid }}_user&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>groups</span>: <span style=color:#ae81ff>proxmox_containers_docker</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_host</span>: <span style=color:#e6db74>&#34;{{ container_ip }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_connection</span>: <span style=color:#ae81ff>ssh</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_user</span>: <span style=color:#e6db74>&#34;{{ container.config.username }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_ssh_private_key_file</span>: <span style=color:#e6db74>&#34;{{ container.config.private_key }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_python_interpreter</span>: <span style=color:#ae81ff>/usr/bin/python3</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>path_to_compose_files</span>: <span style=color:#e6db74>&#34;{{ role_path }}/files/compose_files&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>container</span>: <span style=color:#e6db74>&#34;{{ container }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ansible_become_method</span>: <span style=color:#ae81ff>sudo</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>when</span>: <span style=color:#ae81ff>container.config.install_docker | default(false) and container.config.initial_setup | default(false)</span>
+</span></span></code></pre></div><p>The <code>main.yml</code> is simply.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>---
+</span></span><span style=display:flex><span><span style=color:#75715e># Retrieve the container IP and create a dynamic inventory</span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>include_tasks</span>: <span style=color:#ae81ff>inventory.yml</span>
+</span></span></code></pre></div><h2 id=creating-a-container_setup-role>Creating a <code>container_setup</code> Role<a href=#creating-a-container_setup-role class=hanchor arialabel=Anchor>#</a></h2><p>This role will handle the initial setup. Within the role, we&rsquo;ve integrated the check that attempts to log in as root and then ends the play if it&rsquo;s denied (due to the root login being disabled). Following that, it continues with the initial setup.</p><h3 id=connection_checkyml><code>connection_check.yml</code><a href=#connection_checkyml class=hanchor arialabel=Anchor>#</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>---
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Wait for connection to container</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>wait_for_connection</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>timeout</span>: <span style=color:#ae81ff>15</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>register</span>: <span style=color:#ae81ff>root_conn_test</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>ignore_errors</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># - name: Debug - Show connection check result</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#   debug:</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#     var: root_conn_test</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>End play if connection check fails</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>meta</span>: <span style=color:#ae81ff>end_play</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>when</span>: <span style=color:#ae81ff>root_conn_test.failed</span>
+</span></span></code></pre></div><h3 id=setupyml><code>setup.yml</code><a href=#setupyml class=hanchor arialabel=Anchor>#</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>---
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Update apt cache and upgrade packages</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>apt</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>update_cache</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>upgrade</span>: <span style=color:#ae81ff>dist</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Ensure sudo is installed</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>apt</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>name</span>: <span style=color:#ae81ff>sudo</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>state</span>: <span style=color:#ae81ff>present</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Create non-root user</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>user</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>name</span>: <span style=color:#e6db74>&#34;{{ container.config.username }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>shell</span>: <span style=color:#ae81ff>/bin/bash</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>create_home</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>password</span>: <span style=color:#e6db74>&#34;{{ container.config.user_password | password_hash(&#39;sha512&#39;) }}&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Add user to sudo group</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>user</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>name</span>: <span style=color:#e6db74>&#34;{{ container.config.username }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>groups</span>: <span style=color:#ae81ff>sudo</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>append</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Allow user passwordless sudo</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>copy</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>dest</span>: <span style=color:#e6db74>&#34;/etc/sudoers.d/{{ container.config.username }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>content</span>: <span style=color:#e6db74>&#34;{{ container.config.username }} ALL=(ALL) NOPASSWD: ALL\n&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>owner</span>: <span style=color:#ae81ff>root</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>group</span>: <span style=color:#ae81ff>root</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>mode</span>: <span style=color:#e6db74>&#39;0440&#39;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Copy SSH public key to authorized_keys</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>authorized_key</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>user</span>: <span style=color:#e6db74>&#34;{{ container.config.username }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>state</span>: <span style=color:#ae81ff>present</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>key</span>: <span style=color:#e6db74>&#34;{{ lookup(&#39;file&#39;, container.pubkey_file) }}&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Ensure PubkeyAuthentication is enabled in sshd_config</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>lineinfile</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>path</span>: <span style=color:#ae81ff>/etc/ssh/sshd_config</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>regexp</span>: <span style=color:#e6db74>&#39;^#?PubkeyAuthentication&#39;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>line</span>: <span style=color:#e6db74>&#39;PubkeyAuthentication yes&#39;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Ensure PasswordAuthentication is disabled in sshd_config</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>lineinfile</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>path</span>: <span style=color:#ae81ff>/etc/ssh/sshd_config</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>regexp</span>: <span style=color:#e6db74>&#39;^#?PasswordAuthentication&#39;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>line</span>: <span style=color:#e6db74>&#39;PasswordAuthentication no&#39;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Ensure PermitRootLogin is disabled in sshd_config</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>lineinfile</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>path</span>: <span style=color:#ae81ff>/etc/ssh/sshd_config</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>regexp</span>: <span style=color:#e6db74>&#39;^#?PermitRootLogin&#39;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>line</span>: <span style=color:#e6db74>&#39;PermitRootLogin no&#39;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Restart SSH service</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>service</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>name</span>: <span style=color:#ae81ff>ssh</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>state</span>: <span style=color:#ae81ff>restarted</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span></code></pre></div><h2 id=creating-a-container_extras-role>Creating a <code>container_extras</code> Role<a href=#creating-a-container_extras-role class=hanchor arialabel=Anchor>#</a></h2><p>This role handles all the extra software installs and tweaks that occur as a non-root user. It can easily be extended to include more features as needed.</p><h3 id=extrasyml><code>extras.yml</code><a href=#extrasyml class=hanchor arialabel=Anchor>#</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>---
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Update apt cache and install extra packages</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>apt</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>update_cache</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>name</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>kitty-terminfo</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>tmux</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>htop</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>curl</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>jq</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>fzf</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>neofetch</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>state</span>: <span style=color:#ae81ff>present</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Backup update-motd.d and create new directory</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>shell</span>: <span style=color:#e6db74>&#34;mv /etc/update-motd.d /etc/update-motd.d.bak &amp;&amp; mkdir /etc/update-motd.d&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Truncate /etc/motd</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>shell</span>: <span style=color:#e6db74>&#34;truncate -s 0 /etc/motd&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Create a .hushlogin file </span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>shell</span>: <span style=color:#e6db74>&#34;touch ~/.hushlogin &amp;&amp; chmod 644 ~/.hushlogin&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Append neofetch block to .bashrc</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>blockinfile</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>path</span>: <span style=color:#e6db74>&#34;/home/{{ container.config.username }}/.bashrc&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>marker</span>: <span style=color:#e6db74>&#34;# {mark} NEOFETCH BLOCK&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>block</span>: |<span style=color:#e6db74>
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>      # Run neofetch only in interactive shells
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>      case $- in
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>          *i*)
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>              echo &#34; &#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>              neofetch
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>              echo &#34; &#34;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>              ;;
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>          *) ;;  # Do nothing for non-interactive shells
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>      esac</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become_user</span>: <span style=color:#e6db74>&#34;{{ container.config.username }}&#34;</span>
+</span></span></code></pre></div><h2 id=creating-a-docker_compose-role>Creating a <code>docker_compose</code> Role<a href=#creating-a-docker_compose-role class=hanchor arialabel=Anchor>#</a></h2><p>This role handles the creation of Docker containers after we&rsquo;ve spun up our LXC, configured it, and installed Docker using Jeff Geerling&rsquo;s Docker setup role. Copy over all the files from the <code>proxmox_lxc</code> role&rsquo;s <code>files/compose_files</code>, then add the following modified task.</p><h3 id=compose_setupyml><code>compose_setup.yml</code><a href=#compose_setupyml class=hanchor arialabel=Anchor>#</a></h3><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>---
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Create docker directory for each container</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>file</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>path</span>: <span style=color:#e6db74>&#34;/home/{{ container.config.username }}/docker/{{ item.key }}&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>state</span>: <span style=color:#ae81ff>directory</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>mode</span>: <span style=color:#e6db74>&#39;0755&#39;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>loop</span>: <span style=color:#e6db74>&#34;{{ container.config.docker_containers | default({}) | dict2items }}&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>loop_control</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>label</span>: <span style=color:#e6db74>&#34;{{ item.key }}&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become_user</span>: <span style=color:#e6db74>&#34;{{ container.config.username }}&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Copy docker compose file for container &#34;{{ item.key }}&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>copy</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>src</span>: <span style=color:#e6db74>&#34;{{ role_path }}/files/compose_files/{{ item.key }}.yml&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>dest</span>: <span style=color:#e6db74>&#34;/home/{{ container.config.username }}/docker/{{ item.key }}/docker-compose.yml&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>mode</span>: <span style=color:#e6db74>&#39;0644&#39;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>loop</span>: <span style=color:#e6db74>&#34;{{ container.config.docker_containers | default({}) | dict2items }}&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>loop_control</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>label</span>: <span style=color:#e6db74>&#34;{{ item.key }}&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become_user</span>: <span style=color:#e6db74>&#34;{{ container.config.username }}&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Template .env file for container &#34;{{ item.key }}&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>template</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>src</span>: <span style=color:#e6db74>&#34;{{ role_path }}/files/compose_files/{{ item.key }}.env.j2&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>dest</span>: <span style=color:#e6db74>&#34;/home/{{ container.config.username }}/docker/{{ item.key }}/.env&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>mode</span>: <span style=color:#e6db74>&#39;0644&#39;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>loop</span>: <span style=color:#e6db74>&#34;{{ container.config.docker_containers | default({}) | dict2items }}&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>loop_control</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>label</span>: <span style=color:#e6db74>&#34;{{ item.key }}&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become_user</span>: <span style=color:#e6db74>&#34;{{ container.config.username }}&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Run docker compose up -d in container directory for &#34;{{ item.key }}&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>shell</span>: <span style=color:#e6db74>&#34;docker compose up -d&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>args</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>chdir</span>: <span style=color:#e6db74>&#34;/home/{{ container.config.username }}/docker/{{ item.key }}&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>loop</span>: <span style=color:#e6db74>&#34;{{ container.config.docker_containers | default({}) | dict2items }}&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>loop_control</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>label</span>: <span style=color:#e6db74>&#34;{{ item.key }}&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become_user</span>: <span style=color:#e6db74>&#34;{{ container.config.username }}&#34;</span>
+</span></span></code></pre></div><h2 id=final-playbook--lxc-manifest>Final Playbook & LXC Manifest<a href=#final-playbook--lxc-manifest class=hanchor arialabel=Anchor>#</a></h2><p>Your playbook will now look like this:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span>---
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Provision Proxmox LXC containers</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>hosts</span>: <span style=color:#ae81ff>localhost</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>connection</span>: <span style=color:#ae81ff>local</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>gather_facts</span>: <span style=color:#66d9ef>no</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>vars_files</span>:
+</span></span><span style=display:flex><span>    - <span style=color:#ae81ff>../vars/proxmox-vault.yml</span>
+</span></span><span style=display:flex><span>    - <span style=color:#ae81ff>../vars/lxcs.yml</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>tasks</span>:
+</span></span><span style=display:flex><span>    - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Run proxmox_provision role for each container</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>include_role</span>:
+</span></span><span style=display:flex><span>        <span style=color:#f92672>name</span>: <span style=color:#ae81ff>proxmox_provision</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>vars</span>:
+</span></span><span style=display:flex><span>        <span style=color:#f92672>container</span>: <span style=color:#e6db74>&#34;{{ item }}&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>loop</span>: <span style=color:#e6db74>&#34;{{ lxcs }}&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Populate dynamic inventory with container hosts</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>hosts</span>: <span style=color:#ae81ff>localhost</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>connection</span>: <span style=color:#ae81ff>local</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>gather_facts</span>: <span style=color:#66d9ef>no</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>vars_files</span>:
+</span></span><span style=display:flex><span>    - <span style=color:#ae81ff>../vars/proxmox-vault.yml</span>
+</span></span><span style=display:flex><span>    - <span style=color:#ae81ff>../vars/lxcs.yml</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>tasks</span>:
+</span></span><span style=display:flex><span>    - <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Run container_setup inventory tasks for each container</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>include_role</span>:
+</span></span><span style=display:flex><span>        <span style=color:#f92672>name</span>: <span style=color:#ae81ff>container_inventory</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>tasks_from</span>: <span style=color:#ae81ff>inventory.yml</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>vars</span>:
+</span></span><span style=display:flex><span>        <span style=color:#f92672>container</span>: <span style=color:#e6db74>&#34;{{ item }}&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>loop</span>: <span style=color:#e6db74>&#34;{{ lxcs }}&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Run initial container setup</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>hosts</span>: <span style=color:#ae81ff>proxmox_containers</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>gather_facts</span>: <span style=color:#66d9ef>no</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>roles</span>: 
+</span></span><span style=display:flex><span>    - <span style=color:#f92672>role</span>: <span style=color:#ae81ff>container_setup</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Run extras configuration on containers</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>hosts</span>: <span style=color:#ae81ff>proxmox_containers_extras</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>gather_facts</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>roles</span>: 
+</span></span><span style=display:flex><span>    - <span style=color:#f92672>role</span>: <span style=color:#ae81ff>container_extras</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Run docker setup on provisioned containers</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>hosts</span>: <span style=color:#ae81ff>proxmox_containers_docker</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>gather_facts</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>roles</span>:
+</span></span><span style=display:flex><span>    - <span style=color:#f92672>role</span>: <span style=color:#ae81ff>geerlingguy.docker</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>vars</span>:
+</span></span><span style=display:flex><span>        <span style=color:#f92672>docker_edition</span>: <span style=color:#e6db74>&#39;ce&#39;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>docker_service_state</span>: <span style=color:#ae81ff>started</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>docker_service_enabled</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>docker_packages</span>:
+</span></span><span style=display:flex><span>          - <span style=color:#e6db74>&#34;docker-{{ docker_edition }}&#34;</span>
+</span></span><span style=display:flex><span>          - <span style=color:#e6db74>&#34;docker-{{ docker_edition }}-cli&#34;</span>
+</span></span><span style=display:flex><span>          - <span style=color:#e6db74>&#34;docker-{{ docker_edition }}-rootless-extras&#34;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>docker_packages_state</span>: <span style=color:#ae81ff>present</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>docker_install_compose_plugin</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>docker_compose_package</span>: <span style=color:#ae81ff>docker-compose-plugin</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>docker_compose_package_state</span>: <span style=color:#ae81ff>present</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>docker_users</span>:
+</span></span><span style=display:flex><span>          - <span style=color:#e6db74>&#34;{{ container.config.username }}&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>- <span style=color:#f92672>name</span>: <span style=color:#ae81ff>Run docker container setup on provisioned containers</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>hosts</span>: <span style=color:#ae81ff>proxmox_containers_docker</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>gather_facts</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>become</span>: <span style=color:#66d9ef>yes</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>roles</span>: 
+</span></span><span style=display:flex><span>    - <span style=color:#f92672>role</span>: <span style=color:#ae81ff>docker_compose</span>
+</span></span></code></pre></div><p>The simplified <code>lxcs.yml</code> file will look something like this:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>lxcs</span>:
+</span></span><span style=display:flex><span>  - <span style=color:#f92672>vmid</span>: <span style=color:#ae81ff>125</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>hostname</span>: <span style=color:#ae81ff>testing</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ostemplate</span>: <span style=color:#e6db74>&#34;local:vztmpl/debian-12-standard_12.7-1_amd64.tar.zst&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>storage</span>: <span style=color:#e6db74>&#34;local-lvm&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>cores</span>: <span style=color:#ae81ff>1</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>memory</span>: <span style=color:#ae81ff>1024</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>swap</span>: <span style=color:#ae81ff>512</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>disk</span>: <span style=color:#e6db74>&#34;local-lvm:25&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>net</span>: <span style=color:#e6db74>&#34;name=eth0,bridge=vmbr0,ip=dhcp&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>password</span>: <span style=color:#e6db74>&#34;containerpassword&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>onboot</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>pubkey_file</span>: <span style=color:#e6db74>&#34;~/.ssh/id_rsa.pub&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>features</span>: <span style=color:#e6db74>&#34;nesting=1&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># Additional configuration</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>config</span>:
+</span></span><span style=display:flex><span>      <span style=color:#f92672>username</span>: <span style=color:#ae81ff>demo</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>user_password</span>: <span style=color:#e6db74>&#34;demo123&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>private_key</span>: <span style=color:#e6db74>&#34;~/.ssh/id_rsa&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>wait_for_status</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>initial_setup</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>install_extras</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>install_docker</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>docker_containers</span>:
+</span></span><span style=display:flex><span>        <span style=color:#f92672>it-tools</span>:
+</span></span><span style=display:flex><span>          <span style=color:#f92672>port</span>: <span style=color:#ae81ff>8582</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>gitea</span>:
+</span></span><span style=display:flex><span>          <span style=color:#f92672>port_http</span>: <span style=color:#ae81ff>3000</span>
+</span></span><span style=display:flex><span>          <span style=color:#f92672>port_ssh</span>: <span style=color:#ae81ff>222</span>
+</span></span></code></pre></div><h2 id=putting-everything-in-a-collection>Putting Everything in a Collection<a href=#putting-everything-in-a-collection class=hanchor arialabel=Anchor>#</a></h2><p>Since these are all components of a unified workflow, rather than submitting them to Ansible Galaxy as disparate roles, Ansible supports bundling roles together in &ldquo;collections.&rdquo; These work a bit like functions inside a Python package in the way they&rsquo;re invoked. The structure of my Ansible collection is like this:</p><pre tabindex=0><code>ansible_collections/
+└── sbarbett/
+    └── proxmox_management/
+        ├── galaxy.yml
+        ├── README.md
+        ├── docs/
+        ├── meta/
+        |   ├── runtime.yml
+        └── roles/
+            ├── proxmox_provision/
+            ├── container_inventory/
+            ├── container_setup/
+            ├── container_extras/
+            └── docker_compose/
+</code></pre><p>In each of my roles I&rsquo;ve added basic <code>README.md</code> files and meta files — I won’t get into the details since Ansible already provides a fairly good template. The <code>runtime.yml</code> file is required and, in my case, just contains the line:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>requires_ansible</span>: <span style=color:#e6db74>&#34;&gt;=2.9&#34;</span>
+</span></span></code></pre></div><p><em>Note:</em> You can use <code>ansible-galaxy collection init</code> to create scaffold for a collection, but I didn&rsquo;t.</p><p>The <code>galaxy.yml</code> file contains all the necessary metadata for your collection.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>namespace</span>: <span style=color:#ae81ff>sbarbett</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>name</span>: <span style=color:#ae81ff>proxmox_management</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>version</span>: <span style=color:#e6db74>&#34;1.0.1&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>readme</span>: <span style=color:#ae81ff>README.md</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>authors</span>:
+</span></span><span style=display:flex><span>  - <span style=color:#ae81ff>Shane Barbetta</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>description</span>: &gt;<span style=color:#e6db74>
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>  A collection for managing Proxmox LXC containers (provisioning, configuration, and Docker deployment).</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>license</span>: <span style=color:#ae81ff>MIT</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>tags</span>:
+</span></span><span style=display:flex><span>  - <span style=color:#ae81ff>proxmox</span>
+</span></span><span style=display:flex><span>  - <span style=color:#ae81ff>lxc</span>
+</span></span><span style=display:flex><span>  - <span style=color:#ae81ff>docker</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>dependencies</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>community.general</span>: <span style=color:#e6db74>&#34;&gt;=6.0.0&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>repository</span>: <span style=color:#ae81ff>https://github.com/sbarbett/proxmox-ansible</span>
+</span></span></code></pre></div><p>This is a minimal collection manifest. Note that the <code>repository</code> link is required (one of my first attempts to submit the collection failed because I forgot to nclude this).</p><h3 id=building-the-collection>Building the Collection<a href=#building-the-collection class=hanchor arialabel=Anchor>#</a></h3><p>Run the following command from the root directory of your collection:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>ansible-galaxy collection build
+</span></span></code></pre></div><p>This will produce a gzipped tarball with the name of your package and version from your <code>galaxy.yml</code>, like this: <code>sbarbett-proxmox_management-1.0.0.tar.gz</code>. For local use, you can install your collection using:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>ansible-galaxy collection install namespace-package_name-1.x.x.tar.gz 
+</span></span></code></pre></div><h3 id=submitting-to-ansible-galaxy>Submitting to Ansible Galaxy<a href=#submitting-to-ansible-galaxy class=hanchor arialabel=Anchor>#</a></h3><p>Submit your collection to Ansible Galaxy using the following command.:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>ansible-galaxy collection publish namespace-package_name-1.x.x.tar.gz --api-key your_api_key
+</span></span></code></pre></div><p>You can get your API key from the Ansible Galaxy website (obviously, you must register an account first). The option is (fairly prominently) on the left-hand side under the <strong>Collections</strong> menu.</p><p><img src=../../img/ansible-galaxy-api-key.jpg alt="Screenshot of Ansible Galaxy"></p><h2 id=conclusion>Conclusion<a href=#conclusion class=hanchor arialabel=Anchor>#</a></h2><p>Tools like Ansible and Terraform have become ubiquitous in the DevOps space and are probably considered a <em>hard requirement</em> for any DevOps role at this point. My experience learning Ansible was frustrating at times—it&rsquo;s rather insistent that you adopt its paradigms, which can be quite different from how I&rsquo;d approach similar challenges with basic Python or shell scripts. Still, it&rsquo;s an extremely useful tool. Watching a playbook roll across your terminal and accomplish a bunch of mundane tasks that would have otherwise taken you an hour is, well, a bit&mldr; magical? I dunno. I hope you enjoyed learning with me. I&rsquo;m sure I&rsquo;ll talk about this more in the future, but for now, it&rsquo;s time for a change in scenery.</p></div></div><div class=pagination><div class=pagination__title><span class=pagination__title-h>Read other posts</span><hr></div><div class=pagination__buttons><a href=https://sbarbett.github.io/reticulating-splines/posts/playing-with-my-piholes/ class="button inline prev">Playing With My PiHoles
+</a>::
+<a href=https://sbarbett.github.io/reticulating-splines/posts/ansible-playbooks-for-proxmox-lxcs-pt4/ class="button inline next">Ansible Playbooks for Proxmox and LXCs Part 4</a></div></div></article></div><footer class=footer><div class=footer__inner><div class=copyright><span>© 2025 Powered by <a href=https://gohugo.io>Hugo</a></span>
+<span>:: <a href=https://github.com/panr/hugo-theme-terminal target=_blank>Theme</a> made by <a href=https://github.com/panr target=_blank>panr</a></span></div></div></footer><script type=text/javascript src=/reticulating-splines/bundle.min.js></script></div></body></html>
