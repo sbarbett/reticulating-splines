@@ -10,6 +10,6 @@ Hugo takes static Markdown files and automatically converts them into `html` doc
 
 Contains the actual Hugo settings for the blog, including the theme.
 
-### `nginx.conf`
+### GitHub Pages
 
-Hugo itself doesn't serve web content, so that is handled by a barebone `nginx` container which is running on port `1313`. This sits behind a reverse proxy that handles TLS termination.
+This blog is automatically built and deployed using GitHub Pages.
