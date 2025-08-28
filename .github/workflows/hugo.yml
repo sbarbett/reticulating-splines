@@ -5,6 +5,12 @@ on:
   release:
     types: [published]
   
+  # Run when the release workflow completes
+  workflow_run:
+    workflows: ["Generate a Release from a Tag"]
+    types:
+      - completed
+  
   # Allow manual trigger
   workflow_dispatch:
 
