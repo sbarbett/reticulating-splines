@@ -95,7 +95,7 @@ jobs:
           cp -r /tmp/hugo-built-files/* .
           
           # Add CNAME file for custom domain
-          # echo "blog.barbetta.me" > CNAME
+          echo "blog.barbetta.me" > CNAME
           
           # Add all files
           git add .
