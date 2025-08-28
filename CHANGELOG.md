@@ -7,8 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [v1.0.1] - 2025-08-28
-
 ### Added
 - Wrote a new post about setting up a Hugo blog on GitHub Pages
 
