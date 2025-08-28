@@ -25,7 +25,7 @@ If I was going to start a blog and update it with any regularity, I needed it to
 
 ## Hugo
 
-[Hugo](https://github.com/gohugoio/hugo) is a static site generator written in Go that takes Markdown files and turns them into a static site. There’s a [litany of themes](https://themes.gohugo.io/) you can add as **Hugo Modules** (built on Go modules) by importing them in your config.
+[Hugo](https://github.com/gohugoio/hugo) is a framework written in Go that takes Markdown files and turns them into a static site. There’s a [litany of themes](https://themes.gohugo.io/) you can add as **Hugo Modules** (built on Go modules) by importing them in your config.
 
 The Hugo config file defines site-wide settings. Posts use front matter. For example (YAML shown here—Hugo also supports TOML and JSON):
 
